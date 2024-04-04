@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "TypescriptBottomTabsAuthFlow",
+    "slug": "TypescriptBottomTabsAuthFlow",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.zoucodeparplaisir.TypescriptBottomTabsAuthFlow"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.zoucodeparplaisir.TypescriptBottomTabsAuthFlow"
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b4b86d39-bb1b-480e-b614-d992ae2a6fbf"
+      }
+    }
+  }
+}
