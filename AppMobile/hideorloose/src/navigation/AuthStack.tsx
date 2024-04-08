@@ -15,6 +15,7 @@ const Auth: React.FC = () => {
     <AuthStack.Navigator
       screenOptions={{
         headerShown: false,
+        animationDuration: 1400
       }}
     >
       <AuthStack.Screen name="Login" component={login.current} />

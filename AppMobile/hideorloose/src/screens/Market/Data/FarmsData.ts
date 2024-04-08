@@ -1,4 +1,4 @@
-import { Farm } from "../../../types/farm";
+import { Farm } from "../../../utils/Types/farm";
 
 export const farmsData: Farm[] = [
     {

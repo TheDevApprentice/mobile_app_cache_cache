@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Product } from "../../../types/product";
+import { useState, useEffect, useRef } from "react";
+import { Product } from "../../../utils/Types/product";
 import { useGlobalContext } from "../../../provider/GlobalContextProvider";
 import { farmsData } from "./FarmsData";
 
@@ -17,23 +17,26 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 
 const useMarketData = () => {
   const { location } = useGlobalContext(); 
-
+  const farmData = useRef(farmsData).current; 
   const rayon = 20; 
 
   const [searchText, setSearchText] = useState<string>('');
   const [filteredData, setFilteredData] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(false); 
-  const [originalData, setOriginalData] = useState<Product[]>([]); // État pour stocker les données d'origine
+  const [originalData, setOriginalData] = useState<Product[]>([]);
 
   useEffect(() => {
+    let filteredFarms = farmData; 
+    
     if (location && location.latitude && location.longitude) {
-      const filteredFarms = farmsData.filter(farm => {
+      filteredFarms = farmData.filter(farm => {
         const distance = calculateDistance(location.latitude, location.longitude, farm.location.latitude, farm.location.longitude);
         return distance <= rayon;
       });
+    }
 
-      const groupedProducts = new Map<string, Product>();
-      filteredFarms.forEach(farm => {
+    const groupedProducts = new Map<string, Product>();
+    filteredFarms.forEach(farm => {
         farm.products.forEach(product => {
           const existingProduct = groupedProducts.get(product.title.toLowerCase());
           if (existingProduct) {
@@ -48,18 +51,17 @@ const useMarketData = () => {
         });
       });
 
-      const filteredProducts = Array.from(groupedProducts.values());
-      setOriginalData(filteredProducts)
-      setFilteredData(originalData);
-      setLoading(false);
-    }
-  }, [location]);
-
+    const filteredProducts = Array.from(groupedProducts.values());
+    setOriginalData(filteredProducts)
+    setFilteredData(originalData);
+    setLoading(false);
+    
+  }, [location, farmsData]);
 
   const handleSearch = (text: string) => {
     setSearchText(text);
     if (text === '') {
-      setFilteredData(originalData); // Restaurer les données filtrées à partir des données d'origine lorsque le champ de recherche est vide
+      setFilteredData(originalData);
     } else {
       const searchedProducts = originalData.filter(product =>
         product.title.toLowerCase().includes(text.toLowerCase())
@@ -68,7 +70,12 @@ const useMarketData = () => {
     }
   }
 
-  return { searchText, filteredData, handleSearch, loading };
+  return { 
+    searchText, 
+    filteredData, 
+    handleSearch, 
+    loading 
+  };
 };
 
 export default useMarketData;

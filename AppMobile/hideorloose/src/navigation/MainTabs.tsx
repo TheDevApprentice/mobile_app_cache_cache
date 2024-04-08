@@ -1,13 +1,13 @@
 import React, { memo, useRef } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { themeColor, useTheme } from "react-native-rapi-ui";
-import TabBarIcon from "../components/utils/TabBarIcon";
-import TabBarText from "../components/utils/TabBarText";
 
 import Home from "../screens/Market/Market";
 import About from "../screens/Profile/Profile";
 import Profile from "../screens/Messages/Messages";
 import Cart from "../screens/Cart/Cart";
+import TabBarText from "../utils/components/Tabs/TabBar/TabBarText/TabBarText";
+import TabBarIcon from "../utils/components/Tabs/TabBar/TabBarIcon/TabBarIcon";
 
 const Tabs = createBottomTabNavigator();
 

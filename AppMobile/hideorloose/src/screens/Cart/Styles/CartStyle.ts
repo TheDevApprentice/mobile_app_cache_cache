@@ -20,7 +20,8 @@ export const cartStyles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 1,
     borderColor: '#ccc',
-    padding: 5,
+    padding: 4,
+    paddingHorizontal: 8, 
     marginHorizontal: 5,
   },
   quantityButtonText: {
@@ -33,10 +34,10 @@ export const cartStyles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 10,
     alignItems: 'center',
+    position: "relative", 
+    right: 20,
   },
   scrollView: {
-    flex: 1,
-    marginBottom: 10,
   },
   itemContainer: {
     flexDirection: 'row',

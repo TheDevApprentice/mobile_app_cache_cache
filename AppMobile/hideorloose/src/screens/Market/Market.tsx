@@ -1,24 +1,24 @@
 import React, { memo, useRef, useState } from "react";
-import { View, FlatList } from "react-native";
-import { Layout, TopNav, TextInput, useTheme, themeColor } from "react-native-rapi-ui";
-import { Ionicons } from "@expo/vector-icons";
+import { FlatList, View } from "react-native";
+import { Layout } from "react-native-rapi-ui";
 import useMarketData from "./Data/MarketDataHandler"; // Hook personnalisé
-import { MainStackParamList } from "../../types/navigation";
+import { MainStackParamList } from "../../utils/Types/navigation";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCartContext } from "../../provider/CartDataContext";
+import { useCartContext } from "../../provider/Cart/CartDataContext";
 import ModalComponent from "./component/Modal";
-import { SkeletonItem } from "./component/Skeleton";
+import SkeletonItem from "./component/Skeleton";
 import { marketStyles } from "./Styles/MarketStyle";
-import { Product, ProductInCart } from "../../types/product";
+import { Product, ProductInCart } from "../../utils/Types/product";
 import MarketProduct from "./component/MarketItem";
 import TopNavigationBar from "./component/TopNavigation";
-
+ 
 type Props = NativeStackScreenProps<MainStackParamList, "MainTabs">;
 
 const HomeScreen: React.FC<Props> = memo(({ navigation }) => {
-  const { searchText, filteredData, handleSearch, loading } = useMarketData(); // Hook personnalisé
   const styles = useRef(marketStyles).current;
-  const [numColumns, setNumColumns] = useState<number>(2);
+  const numColumns = useRef<number>(2).current;
+ 
+  const { searchText, filteredData, handleSearch, loading } = useMarketData(); // Hook personnalisé
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -39,9 +39,8 @@ const HomeScreen: React.FC<Props> = memo(({ navigation }) => {
       };
       handleAddProductToCart(productInCart);
       setModalVisible(false);
-      setSelectedQuantity(0); 
-      
-    }
+      setSelectedQuantity(1); 
+    } 
   };
 
   return (
@@ -62,21 +61,22 @@ const HomeScreen: React.FC<Props> = memo(({ navigation }) => {
           />
         ) : (
           <FlatList
-            key={numColumns}
             contentContainerStyle={styles.propertyListContainer}
+            key={numColumns}
             data={filteredData}
             numColumns={numColumns}
             renderItem={({ item }) => (
-              <MarketProduct
+              <MarketProduct 
                 product={item}
                 onPress={() => handleProductPress(item)}
               />
             )}
             keyExtractor={(item) => item.id.toString()}
           />
-        )}
+        )} 
       </View>
       <ModalComponent
+        navigation={navigation}
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
         selectedProduct={selectedProduct}

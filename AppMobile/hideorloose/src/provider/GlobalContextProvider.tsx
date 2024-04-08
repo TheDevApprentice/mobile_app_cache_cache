@@ -1,31 +1,49 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { GlobalContextProviderType } from '../types/Contexts/globalContextProvider';
+import { GlobalContextProviderType } from './Types/globalContextProvider';
 import { getFirestore, setDoc, doc } from "firebase/firestore";
 import * as Location from 'expo-location';
-import { User } from '../types/user';
+import { User } from '../utils/Types/user';
+import { Platform } from 'react-native';
+import { AuthContext } from './Auth/AuthProvider';
+import { firebaseConfig } from "../config/firebase";
+import { getApps, initializeApp } from 'firebase/app';
 
 const GlobalContext = createContext<GlobalContextProviderType | undefined>(undefined);
 
+if (getApps().length === 0) {
+  initializeApp(firebaseConfig);
+}
+
 export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [userData, setUserData] = useState<User>();
   const firestore = getFirestore();
-
+  const { auth } = useContext(AuthContext);
+  const [userData, setUserData] = useState<User>();
+  
   useEffect(() => {
-    const loadUserData = async () => {
-      if (typeof window !== 'undefined') {
-        try {
-          const storedUserData = await AsyncStorage.getItem('userData');
-          if (storedUserData) {
-            setUserData(JSON.parse(storedUserData));
-          }
-        } catch (error) {
-          console.error('Error loading user data:', error);
-        }
+    (async () => {
+      if (Platform.OS === 'android' && !(await Location.isBackgroundLocationAvailableAsync())) {
+        // Gestion des erreurs pour les services Google non disponibles sur Android
+        return;
       }
-    };
+      
+      // Demandez la permission d'accéder à la localisation de l'utilisateur
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        // Gestion des erreurs si l'utilisateur refuse la permission
+        return;
+      }
 
-    loadUserData();
+      // Obtenez la localisation actuelle de l'utilisateur
+      let location = await Location.getCurrentPositionAsync({});
+      // Stockez la localisation en base de données si l'utilisateur est connecté
+      
+      if (auth?.currentUser && auth?.currentUser !== undefined) {
+        await setDoc(doc(firestore, "users", auth.currentUser.uid), {
+          location: { latitude: location.coords.latitude, longitude: location.coords.longitude },
+        }, { merge: true });
+      }
+    })();
   }, []);
 
   useEffect(() => {
@@ -59,7 +77,8 @@ export const GlobalContextProvider: React.FC<{ children: React.ReactNode }> = ({
     <GlobalContext.Provider 
     value={{
       ...userData,
-      setUserData
+      setUserData, 
+      auth
     }}
     >
       {children}

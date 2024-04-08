@@ -6,19 +6,25 @@ export const modalStyles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-
-    height: 200
+    elevation: 20
   },
   modalContent: {
     backgroundColor: "#fff",
     borderRadius: 10,
     padding: 20,
     alignItems: "center",
-    elevation: 5,
+    elevation: 20,
     position: "relative", 
-    top: "30%",
+    top: "71%",
+    left: -30,
     margin: 30,
-    height: 240
+    height: 200,
+    width: 400, 
+    maxHeight: "100%", 
+    maxWidth: "100%",
+    borderWidth: 0.4,
+    borderColor: "#", 
+    borderCurve: "circular"
   },
   modalTitle: {
     fontSize: 18,
@@ -36,7 +42,8 @@ export const modalStyles = StyleSheet.create({
     fontWeight: "bold",
     marginHorizontal: 15,
     position: "relative", 
-    left: 100
+    left: 100, 
+    top: -140
   },
   selectedQuantityTotalText: {
     fontSize: 16,
@@ -61,7 +68,8 @@ export const modalStyles = StyleSheet.create({
     fontWeight: "bold",
     // marginHorizontal: 15,
     position: "relative", 
-    left: 100, 
+    left: -110,
+    top: -5 
     
   },
   selectedPriceTotalText: {
@@ -71,7 +79,7 @@ export const modalStyles = StyleSheet.create({
     position: "relative", 
     top: -190, 
     left: 5, 
-    color: "#2a9134"
+    color: "#457b9d"
   },
   selectedPriceTotalQuantity: {
     fontSize: 16,
@@ -80,7 +88,7 @@ export const modalStyles = StyleSheet.create({
     position: "relative", 
     top: -180, 
     left: 13,
-    color: "#2a9134"
+    color: "#457b9d"
   },
   selectedQuantity: {
     fontSize: 16,

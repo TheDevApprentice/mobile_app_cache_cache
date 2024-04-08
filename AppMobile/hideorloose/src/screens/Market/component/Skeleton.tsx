@@ -1,7 +1,8 @@
 import { View } from "react-native";
 import { skellettonStyle } from "../Styles/SkellettonStyle";
+import { memo } from "react";
 
- export const SkeletonItem: React.FC = () => (
+const SkeletonItem: React.FC = () => (
     <View style={skellettonStyle.skeletonItemContainer}>
       <View style={skellettonStyle.skeletonImage} />
       <View style={skellettonStyle.skeletonCardBody}>
@@ -14,3 +15,5 @@ import { skellettonStyle } from "../Styles/SkellettonStyle";
       </View>
     </View>
   );
+
+  export default memo(SkeletonItem)

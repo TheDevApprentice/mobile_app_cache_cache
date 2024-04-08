@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect } from "react";
+import React, { memo, useState, useEffect, useContext } from "react";
 import {
   ScrollView,
   TouchableOpacity,
@@ -7,7 +7,6 @@ import {
   Image,
   Platform,
 } from "react-native";
-import { AuthStackParamList } from "../../types/navigation";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
@@ -18,83 +17,33 @@ import {
   useTheme,
   themeColor,
 } from "react-native-rapi-ui";
-import { getFirestore, setDoc, doc } from "firebase/firestore"; // Importez les fonctions nécessaires pour utiliser Firestore
-import * as Location from 'expo-location'; // Importez les fonctionnalités de géolocalisation d'Expo
+import { AuthStackParamList } from "../../utils/Types/navigation";
+import { AuthContext } from "../../provider/Auth/AuthProvider";
 
 export default memo(function ({
   navigation,
 }: NativeStackScreenProps<AuthStackParamList, "Login">) {
   const { isDarkmode, setTheme } = useTheme();
-  const auth = getAuth();
-  const firestore = getFirestore(); // Obtenez une référence à Firestore
-
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
-  const [emailError, setEmailError] = useState<string>("");
-  const [passwordError, setPasswordError] = useState<string>("");
-
-  useEffect(() => {
-    (async () => {
-      if (Platform.OS === 'android' && !(await Location.isBackgroundLocationAvailableAsync())) {
-        // Gestion des erreurs pour les services Google non disponibles sur Android
- 
-        return;
-      }
-      
-      // Demandez la permission d'accéder à la localisation de l'utilisateur
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        // Gestion des erreurs si l'utilisateur refuse la permission
-
-        return;
-      }
-
-      // Obtenez la localisation actuelle de l'utilisateur
-      let location = await Location.getCurrentPositionAsync({});
-      // Stockez la localisation en base de données si l'utilisateur est connecté
-      if (auth.currentUser) {
-        await setDoc(doc(firestore, "users", auth.currentUser.uid), {
-          location: { latitude: location.coords.latitude, longitude: location.coords.longitude },
-        }, { merge: true });
-      }
-    })();
-  }, []);
-
-  async function login() {
-    setLoading(true);
-    // Validation de l'email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setEmailError("Please enter a valid email address");
-      setLoading(false);
-      return;
-    }
-
-    // Validation du mot de passe
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      setPasswordError("Password must contain at least 8 characters, including one letter, one number, and one special character.");
-      setLoading(false);
-      return;
-    }
-
-    // Authentification avec l'email et le mot de passe
-    await signInWithEmailAndPassword(auth, email, password).catch(function (
-      error
-    ) {
-      var errorCode = error.code;
-      var errorMessage = error.message;
-
-      setLoading(false);
-    });
-  }
-
+  const { 
+    login, 
+    user,
+    auth, 
+    email, 
+    password, 
+    passwordError, 
+    loading, 
+    emailError, 
+    setEmail, 
+    setEmailError, 
+    setLoading, 
+    setPassword, 
+    setPasswordError, 
+   } = useContext(AuthContext);
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
       <Layout>
-        <ScrollView
-          contentContainerStyle={{
+        <View
+          style={{
             flexGrow: 1,
           }}
         >
@@ -227,7 +176,7 @@ export default memo(function ({
                 justifyContent: "center",
               }}
             >
-              {/* <TouchableOpacity
+              <TouchableOpacity
                 onPress={() => {
                   isDarkmode ? setTheme("light") : setTheme("dark");
                 }}
@@ -241,10 +190,10 @@ export default memo(function ({
                 >
                   {isDarkmode ? "☀️ light theme" : "🌑 dark theme"}
                 </Text>
-              </TouchableOpacity> */}
+              </TouchableOpacity>
             </View>
           </View>
-        </ScrollView>
+        </View>
       </Layout>
     </KeyboardAvoidingView>
   );

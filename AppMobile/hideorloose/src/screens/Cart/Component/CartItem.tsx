@@ -1,9 +1,8 @@
-import React, { memo, useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
-import { Layout, useTheme, Button } from 'react-native-rapi-ui';
+import React, { memo, useRef } from 'react';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { useTheme } from 'react-native-rapi-ui';
 import { cartStyles } from '../Styles/CartStyle';
-import { ProductInCart } from '../../../types/product';
-
+import { ProductInCart } from '../../../utils/Types/product';
 
 const CartItem: React.FC<{
   product: ProductInCart;
@@ -40,8 +39,8 @@ const CartItem: React.FC<{
         styles.itemContainer, 
         { 
           backgroundColor: backgroundColor,
-          borderColor: '#8a817c', // Couleur de la bordure
-          borderWidth: 1, // Largeur de la bordure
+          borderColor: '#8a817c',
+          borderWidth: 1,
         }
       ]}>
       <Image source={{ uri: product.thumbnail }} style={styles.image} />

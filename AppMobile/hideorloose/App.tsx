@@ -1,11 +1,12 @@
 import React from "react";
 import Navigation from "./src/navigation";
-import { AuthProvider } from "./src/provider/AuthProvider";
+import { AuthProvider } from "./src/provider/Auth/AuthProvider";
 import { ThemeProvider } from "react-native-rapi-ui";
 import { LogBox } from "react-native";
 import { GlobalContextProvider } from "./src/provider/GlobalContextProvider";
-import { CartProvider } from "./src/provider/CartDataContext";
-import { NotificationProvider } from "./src/provider/NotificationContextProvider";
+import { CartProvider } from "./src/provider/Cart/CartDataContext";
+import { NotificationProvider } from "./src/provider/Notification/NotificationContextProvider";
+import { MessageDataProvider } from "./src/provider/MessageDataProvider";
 
 export default function App() {
   const images = [
@@ -23,11 +24,13 @@ export default function App() {
 
   return (
     <ThemeProvider theme="light" images={images}>
-       <GlobalContextProvider>
+      <GlobalContextProvider>
         <AuthProvider>
           <CartProvider>
             <NotificationProvider>
-              <Navigation />
+              <MessageDataProvider>
+                <Navigation />
+              </MessageDataProvider>
             </NotificationProvider>
           </CartProvider>
         </AuthProvider>

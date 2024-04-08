@@ -2,8 +2,9 @@
 
 import { useRef } from 'react';
 import { useGlobalContext } from '../../../provider/GlobalContextProvider';
-import { User } from '../../../types/user';
+import { User } from '../../../utils/Types/user';
 import { profileStyles } from '../Styles/ProfileStyle';
+import { actions } from './Actions/action';
 
 export const useProfileDataHandler = () => {
   const styles = useRef(profileStyles).current;
@@ -52,39 +53,6 @@ export const useProfileDataHandler = () => {
     cart: cart,
     location: location
   };
-
-  const actions = [
-    {
-      name: 'Order History',
-      endpoint: '/orders',
-      backgroundColor: '#f9c74f',
-      iconName: 'pricetags',
-    },
-    {
-      name: 'My Farms',
-      endpoint: '/favorites',
-      backgroundColor: '#dc2f02',
-      iconName: 'home-outline',
-    },
-    {
-      name: 'Payment Methods',
-      endpoint: '/payments',
-      backgroundColor: '#43aa8b',
-      iconName: 'card',
-    },
-    {
-      name: 'My Reviews',
-      endpoint: '/reviews',
-      backgroundColor: '#f48c06',
-      iconName: 'list',
-    },
-    {
-      name: 'Help & Support',
-      endpoint: '/help',
-      backgroundColor: '#90be6d',
-      iconName: 'help-circle',
-    },
-  ];
-
+  
   return { userData, actions, styles };
 };

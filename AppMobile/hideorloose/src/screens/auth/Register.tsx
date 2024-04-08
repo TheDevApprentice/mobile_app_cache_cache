@@ -8,7 +8,7 @@ import {
   Image,
   Platform,
 } from "react-native";
-import { AuthStackParamList } from "../../types/navigation";
+import { AuthStackParamList } from "../../utils/Types/navigation";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
@@ -19,15 +19,15 @@ import {
   useTheme,
   themeColor,
 } from "react-native-rapi-ui";
-import { getFirestore, setDoc, doc } from "firebase/firestore"; // Importez les fonctions nécessaires pour utiliser Firestore
-import * as Location from 'expo-location'; // Importez les fonctionnalités de géolocalisation d'Expo
+import { getFirestore, setDoc, doc } from "firebase/firestore";
+import * as Location from 'expo-location';
 
 export default memo(function ({
   navigation,
 }: NativeStackScreenProps<AuthStackParamList, "Register">) {
   const { isDarkmode, setTheme } = useTheme();
   const auth = getAuth();
-  const firestore = getFirestore(); // Obtenez une référence à Firestore
+  const firestore = getFirestore();
 
   const [email, setEmail] = useState<string>("");
   const [userType, setUserType] = useState<string>("");
@@ -91,8 +91,8 @@ export default memo(function ({
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
       <Layout>
-        <ScrollView
-          contentContainerStyle={{
+        <View
+          style={{
             flexGrow: 1,
           }}
         >
@@ -269,7 +269,7 @@ export default memo(function ({
             >
             </View>
           </View>
-        </ScrollView>
+        </View>
       </Layout>
     </KeyboardAvoidingView>
   );

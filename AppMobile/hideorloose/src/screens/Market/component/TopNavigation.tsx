@@ -1,14 +1,15 @@
-import React from "react";
+import React, { memo } from "react";
 import { View } from "react-native";
 import { TopNav, TextInput, useTheme, themeColor } from "react-native-rapi-ui";
 import { Ionicons } from "@expo/vector-icons";
-import { TopNavigationBarProps } from "../../../types/Headers/topNavigationBar";
+import { TopNavigationBarProps } from "../../../utils/Types/Headers/topNavigationBar";
 
 const TopNavigationBar: React.FC<TopNavigationBarProps> = ({
   searchText,
   handleSearch,
 }) => {
-const { isDarkmode, setTheme } = useTheme();
+  const { isDarkmode, setTheme } = useTheme();
+
   return (
     <TopNav
       leftContent={
@@ -40,4 +41,4 @@ const { isDarkmode, setTheme } = useTheme();
   );
 };
 
-export default TopNavigationBar;
+export default memo(TopNavigationBar);
