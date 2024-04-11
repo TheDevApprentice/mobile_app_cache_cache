@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, TextInput, Image } from 'react-native';
 import React, {useEffect, useState} from "react"
 import { useNavigation } from '@react-navigation/native';
+import {firebase} from "../firebaseConfig";
 
 export default function DashboardPage() {
   const navigation = useNavigation();
@@ -11,7 +12,7 @@ export default function DashboardPage() {
 
     <TouchableOpacity
       style = {styles.button}
-      onPress={()=>navigation.navigate("Login")}
+      onPress={()=> {firebase.auth().signOut(); navigation.navigate("Login");}}
     >
       <Text style={styles.buttonText}>Se déconnecter</Text>
     </TouchableOpacity>
