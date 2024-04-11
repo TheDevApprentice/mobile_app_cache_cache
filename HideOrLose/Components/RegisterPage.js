@@ -1,12 +1,14 @@
-import { StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, ImageBackground } from 'react-native';
 import React, {useState} from 'react';
 import {firebase} from "../firebaseConfig";
+import { useNavigation } from '@react-navigation/native';
 
 export default function RegistrationPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigation = useNavigation();
 
   registerUser = async (email, password, firstname, lastname) => {
     await firebase.auth().createUserWithEmailAndPassword(email, password)
@@ -24,39 +26,41 @@ export default function RegistrationPage() {
     });
   }
   return (
-    <View style={styles.container}>
-      <Text style={styles.titleText}>Créer un compte ici</Text>
-      <View style={{marginTop:40}}>
-        <TextInput
-          style = {styles.textInput}
-          placeholder = "Prenom"
-          onChangeText = {(firstName) => setFirstName(firstName)}
-        />
-        <TextInput
-          style={styles.textInput}
-          placeholder= "Nom"
-          onChangeText = {(lastName) => setLastName(lastName)}
-        />
-        <TextInput
-          style={styles.textInput}
-          placeholder= "Adresse courriel"
-          keyboardType='email-address'
-          onChangeText = {(email) => setEmail(email)}
-        />
-        <TextInput
-          style={styles.textInput}
-          placeholder="Mot de passe"
-          secureTextEntry={true}
-          onChangeText = {(password) => setPassword(password)}
-        />
+    <ImageBackground source={require('../loginBackground.jpg')} style={styles.image}>
+      <View style={styles.container}>
+        <Text style={styles.titleText}>Créer un compte ici</Text>
+        <View style={{marginTop:40}}>
+          <TextInput
+            style = {styles.textInput}
+            placeholder = "Prenom"
+            onChangeText = {(firstName) => setFirstName(firstName)}
+          />
+          <TextInput
+            style={styles.textInput}
+            placeholder= "Nom"
+            onChangeText = {(lastName) => setLastName(lastName)}
+          />
+          <TextInput
+            style={styles.textInput}
+            placeholder= "Adresse courriel"
+            keyboardType='email-address'
+            onChangeText = {(email) => setEmail(email)}
+          />
+          <TextInput
+            style={styles.textInput}
+            placeholder="Mot de passe"
+            secureTextEntry={true}
+            onChangeText = {(password) => setPassword(password)}
+          />
+        </View>
+        <TouchableOpacity
+          style= {styles.button}
+          onPress={() => {registerUser(email, password, firstName, lastName); navigation.navigate("LoginPage");}}
+        >
+          <Text style={{fontWeight: 'bold', fontSize: 22}}>Créer un compte</Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity
-        style= {styles.button}
-        onPress={() => {registerUser(email, password, firstName, lastName)}}
-      >
-        <Text style={{fontWeight: 'bold', fontSize: 22}}>Créer un compte</Text>
-      </TouchableOpacity>
-    </View>
+    </ImageBackground>
   );
 }
 
@@ -91,4 +95,11 @@ button: {
     backgroundColor: "#F4A460",
     borderRadius: 50
 },
+image: {
+    flex: 1,
+    justifyContent: 'center',
+    resizeMode: 'cover',
+    width: '100%',
+    height: '100%'
+}
 });

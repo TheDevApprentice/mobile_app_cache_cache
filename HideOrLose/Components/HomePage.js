@@ -12,7 +12,10 @@ export default function DashboardPage() {
 
     <TouchableOpacity
       style = {styles.button}
-      onPress={()=> {firebase.auth().signOut(); navigation.navigate("Login");}}
+      onPress={()=> {
+        firebase.auth().signOut(); 
+        navigation.navigate("LoginPage");
+      }}
     >
       <Text style={styles.buttonText}>Se déconnecter</Text>
     </TouchableOpacity>

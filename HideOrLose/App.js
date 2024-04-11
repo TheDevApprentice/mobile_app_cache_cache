@@ -7,6 +7,7 @@ import 'react-native-gesture-handler';
 import LoginPage from './Components/LoginPage';
 import HomePage from './Components/HomePage';
 import RegisterPage from './Components/RegisterPage';
+import ForgotPassword from './Components/ForgotPassword';
 const Stack = createStackNavigator();
 
 import {firebase} from "./firebaseConfig";
@@ -32,8 +33,9 @@ function App() {
   if (!user) {
     return (
       <Stack.Navigator>
-        <Stack.Screen name='Login' component={LoginPage} options={{headerShown:false}}/>
+        <Stack.Screen name='LoginPage' component={LoginPage} options={{headerShown:false}}/>
         <Stack.Screen name='RegisterPage' component={RegisterPage} options={{headerShown:false}}/>
+        <Stack.Screen name='ForgotPassword' component={ForgotPassword} options={{headerShown:false}}/>
       </Stack.Navigator>
     )
   }

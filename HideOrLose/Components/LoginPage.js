@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Button } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Button, ImageBackground } from 'react-native';
 import React, {useState} from 'react';
 import { useNavigation } from '@react-navigation/native';
 import {firebase} from "../firebaseConfig";
@@ -19,42 +19,45 @@ export default function LoginPage() {
       };
 
     return (
-        <View style={styles.container}>
-            <Text style= {styles.titleText}>Connexion</Text>
-            <View style={{marginTop:40}}>
-            <TextInput 
-                style={styles.textInput}
-                placeholder="Adresse courriel"
-                autoCorrect = {false}
-                keyboardType='email-address'
-                onChangeText = {(email) => setEmail(email)}
-            />
-            <TextInput 
-                style={styles.textInput}
-                placeholder="Mot de passe"
-                autoCorrect = {false}
-                secureTextEntry={true}
-                onChangeText = {(password) => setPassword(password)}
-            />
+        <ImageBackground source={require('../loginBackground.jpg')} style={styles.image}>
+            <View style={styles.container}>
+              <Text style= {styles.titleText}>Connexion</Text>
+              <View style={{marginTop:40}}>
+              <TextInput 
+                  style={styles.textInput}
+                  placeholder="Adresse courriel"
+                  autoCorrect = {false}
+                  keyboardType='email-address'
+                  onChangeText = {(email) => setEmail(email)}
+              />
+              <TextInput 
+                  style={styles.textInput}
+                  placeholder="Mot de passe"
+                  autoCorrect = {false}
+                  secureTextEntry={true}
+                  onChangeText = {(password) => setPassword(password)}
+              />
+              </View>
+              <TouchableOpacity 
+                  style={styles.button}
+                  onPress={handleLogin}
+              >
+                  <Text style = {styles.buttonText}>Se connecter</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                  style={{marginTop:20}}
+                  onPress={()=>navigation.navigate("RegisterPage")}
+              >
+                  <Text style = {styles.SecondaryButtonText}>Créer un compte</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                  style={{marginTop:20}}
+                  onPress={()=>navigation.navigate("ForgotPassword")}
+              >
+                  <Text style = {styles.SecondaryButtonText}>Mot de passe oublié?</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity 
-                style={styles.button}
-                onPress={handleLogin}
-            >
-                <Text style = {styles.buttonText}>Se connecter</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-                style={{marginTop:20}}
-                onPress={()=>navigation.navigate("RegisterPage")}
-            >
-                <Text style = {styles.SecondaryButtonText}>Créer un compte</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-                style={{marginTop:20}}
-            >
-                <Text style = {styles.SecondaryButtonText}>Mot de passe oublié?</Text>
-            </TouchableOpacity>
-        </View>
+        </ImageBackground>
     );
 }
 
@@ -62,7 +65,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: "center",
-        marginTop: 100,
+        marginTop: 100
     },
     textInput: {
         paddingTop: 20,
@@ -95,6 +98,14 @@ const styles = StyleSheet.create({
     },
     SecondaryButtonText: {
         fontWeight: "bold",
-        fontSize: 16
+        fontSize: 16,
+        textDecorationLine: 'underline'
+    },
+    image: {
+        flex: 1,
+        justifyContent: 'center',
+        resizeMode: 'cover',
+        width: '100%',
+        height: '100%'
     }
 });
