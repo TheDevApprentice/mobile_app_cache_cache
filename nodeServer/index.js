@@ -1,4 +1,4 @@
-import { User, Coordinate, Room } from './objects.js';
+import { User, Room } from './objects.js';
 import { createRequire } from "module";
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -24,7 +24,7 @@ let rooms = [];
 
 io.on('connection', (socket) => {
     console.log('a user connected');
-    users.push(new User(socket.id, new Coordinate(0,0)));
+    users.push(new User(socket.id, ""));
     console.log(users);
     sendRoomList(socket.id, rooms);
 
@@ -88,7 +88,9 @@ const isNewRoom = (roomName) => {
 };
 
 const sendRoomList = (ioId, rooms) => {
-  io.to(ioId).emit('room-list-given', rooms.map(r => ({name: r.name, userCount: r.users.length})));
+  io.to(ioId).emit(
+    'room-list-given',
+    rooms.map(r => ({name: r.name, userCount: r.users.length})));
 };
 
 const getUserById = (id) => {

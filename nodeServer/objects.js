@@ -1,9 +1,11 @@
 'use strict';
 
 class User{
-    constructor(ioId, coordinate){
+    constructor(ioId, name){
         this.ioId = ioId;
-        this.coordinate = coordinate;
+        this.name = name;
+        this.ready = false;
+        this.coordinate = new Coordinate(0,0);
     }
 };
 
