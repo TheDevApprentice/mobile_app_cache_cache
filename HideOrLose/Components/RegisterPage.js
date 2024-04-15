@@ -26,7 +26,7 @@ export default function RegistrationPage() {
     });
   }
   return (
-    <ImageBackground source={require('../loginBackground.jpg')} style={styles.image}>
+    <ImageBackground source={require('../assets/loginBackground.jpg')} style={styles.image}>
       <View style={styles.container}>
         <Text style={styles.titleText}>Créer un compte ici</Text>
         <View style={{marginTop:40}}>

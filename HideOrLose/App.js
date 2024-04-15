@@ -11,6 +11,7 @@ import ForgotPassword from './Components/ForgotPassword';
 const Stack = createStackNavigator();
 
 import {firebase} from "./firebaseConfig";
+import LobbyPage from './Components/LobbyPage';
 
 function App() {
 
@@ -42,6 +43,7 @@ function App() {
   return (
     <Stack.Navigator>
       <Stack.Screen name='HomePage' component={HomePage} options={{headerShown:false}}/>
+      <Stack.Screen name='LobbyPage' component={LobbyPage} options={{headerShown:false}}/>
     </Stack.Navigator>
   );
 }

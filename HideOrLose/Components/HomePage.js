@@ -10,6 +10,16 @@ export default function DashboardPage() {
 
     <Text style ={styles.titleText}>Bonjour</Text>
 
+
+    <TouchableOpacity
+      style = {styles.button}
+      onPress={()=> {
+        navigation.navigate("LobbyPage");
+      }}
+    >
+      <Text style={styles.buttonText}>Play</Text>
+    </TouchableOpacity>
+
     <TouchableOpacity
       style = {styles.button}
       onPress={()=> {
