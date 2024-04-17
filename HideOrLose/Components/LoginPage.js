@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Button, ImageBackground } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground } from 'react-native';
 import React, {useState} from 'react';
 import { useNavigation } from '@react-navigation/native';
 import {firebase} from "../firebaseConfig";
@@ -12,6 +12,8 @@ export default function LoginPage() {
     const handleLogin = async () => {
         try {
           await firebase.auth().signInWithEmailAndPassword(email, password);
+          setEmail('');
+          setPassword('');
           navigation.navigate("HomePage");
         } catch (error) {
           console.error('Login error:', error.message);
@@ -29,6 +31,7 @@ export default function LoginPage() {
                   autoCorrect = {false}
                   keyboardType='email-address'
                   onChangeText = {(email) => setEmail(email)}
+                  value = {email}
               />
               <TextInput 
                   style={styles.textInput}
@@ -36,6 +39,7 @@ export default function LoginPage() {
                   autoCorrect = {false}
                   secureTextEntry={true}
                   onChangeText = {(password) => setPassword(password)}
+                  value = {password}
               />
               </View>
               <TouchableOpacity 

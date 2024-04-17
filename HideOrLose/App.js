@@ -1,5 +1,3 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import React, { useEffect, useState } from "react";
@@ -8,13 +6,11 @@ import LoginPage from './Components/LoginPage';
 import HomePage from './Components/HomePage';
 import RegisterPage from './Components/RegisterPage';
 import ForgotPassword from './Components/ForgotPassword';
-const Stack = createStackNavigator();
-
-import {firebase} from "./firebaseConfig";
 import LobbyPage from './Components/LobbyPage';
+import {firebase} from "./firebaseConfig";
 
 function App() {
-
+  const Stack = createStackNavigator();
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState();
 
@@ -31,21 +27,15 @@ function App() {
 
   if (initializing) return null;
 
-  if (!user) {
-    return (
-      <Stack.Navigator>
-        <Stack.Screen name='LoginPage' component={LoginPage} options={{headerShown:false}}/>
-        <Stack.Screen name='RegisterPage' component={RegisterPage} options={{headerShown:false}}/>
-        <Stack.Screen name='ForgotPassword' component={ForgotPassword} options={{headerShown:false}}/>
-      </Stack.Navigator>
-    )
-  }
   return (
     <Stack.Navigator>
+      <Stack.Screen name='LoginPage' component={LoginPage} options={{headerShown:false}}/>
+      <Stack.Screen name='RegisterPage' component={RegisterPage} options={{headerShown:false}}/>
+      <Stack.Screen name='ForgotPassword' component={ForgotPassword} options={{headerShown:false}}/>
       <Stack.Screen name='HomePage' component={HomePage} options={{headerShown:false}}/>
       <Stack.Screen name='LobbyPage' component={LobbyPage} options={{headerShown:false}}/>
     </Stack.Navigator>
-  );
+  )
 }
 
 export default () => {
