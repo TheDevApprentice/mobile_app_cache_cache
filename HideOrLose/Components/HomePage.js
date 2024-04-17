@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, TextInput, Image } from 'react-native';
-import React, {useEffect, useState} from "react"
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React from "react"
 import { useNavigation } from '@react-navigation/native';
 import {firebase} from "../firebaseConfig";
 
@@ -10,14 +10,13 @@ export default function DashboardPage() {
 
     <Text style ={styles.titleText}>Bonjour</Text>
 
-
     <TouchableOpacity
       style = {styles.button}
       onPress={()=> {
         navigation.navigate("LobbyPage");
       }}
     >
-      <Text style={styles.buttonText}>Play</Text>
+      <Text style={styles.buttonText}>Jouer</Text>
     </TouchableOpacity>
 
     <TouchableOpacity

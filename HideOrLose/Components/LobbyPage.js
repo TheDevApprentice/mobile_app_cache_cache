@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, TextInput, Image,Button,ImageBackground} from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity,ImageBackground, Button, Pressable} from 'react-native';
 import React, {useEffect, useState} from "react"
 import { useNavigation } from '@react-navigation/native';
 import {firebase} from "../firebaseConfig";
@@ -8,23 +8,24 @@ export default function LobbyPage(){
     const navigation = useNavigation();
     return(
     <ImageBackground source={require('../assets/backgroundLobby.jpg')} style={styles.image}>
-
-        <View style={styles.container}>
-            <TouchableOpacity onPress={()=>{navigation.navigate('HomePage')}}>
-                <Text style={styles.quitButton}>Exit</Text>
-                </TouchableOpacity>
-        <Text style={styles.containerTitle}>Lobby</Text>
-        
-        <View style={styles.PlayerList}>
-            <Text style={styles.Player}>Marina Patry</Text>
-            <Text style={styles.Player}>Marc-André Parent</Text>
+        <View>
+            <TouchableOpacity onPress={()=>navigation.navigate("HomePage")}>
+                <Text style={styles.quitButton}>Quitter</Text>
+            </TouchableOpacity>
         </View>
-        <TouchableOpacity>
-            <Text style={styles.buttonReady}>Ready</Text>
-        </TouchableOpacity>
+        <View style={styles.container}>
+            <Text style={styles.containerTitle}>Lobby</Text>
+        
+            <View style={styles.PlayerList}>
+                <Text style={styles.Player}>Marina Patry</Text>
+                <Text style={styles.Player}>Marc-André Parent</Text>
+            </View>
+    
+            <TouchableOpacity>
+                <Text style={styles.buttonReady}>Prêt</Text>
+            </TouchableOpacity>
         </View>
     </ImageBackground>
-    
     );
 }
 
@@ -55,14 +56,16 @@ const styles = StyleSheet.create({
         
     },
     quitButton:{
-        position : 'absolute',
-        left:-170,
-        borderWidth:1,
+        borderWidth: 1,
         backgroundColor: '#DC143C',
         borderRadius:5,
-        paddingLeft:5,
-        paddingRight:5,
-        fontSize:20
+        marginLeft: 25,
+        marginTop: 40,
+        paddingTop: 2,
+        fontSize: 20,
+        width: 50,
+        height: 30,
+        textAlign: 'center',
     },
     image: {
         flex: 1,
