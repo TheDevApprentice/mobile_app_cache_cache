@@ -4,21 +4,34 @@ import { useNavigation } from '@react-navigation/native';
 import {firebase} from "../firebaseConfig";
 
 
-export default function LobbyPage(){
+export default function LobbyPage({socket}){
     const navigation = useNavigation();
+    const [room,setRoom] = useState({name:'',users:[{name:''}]});
+
+    useEffect(()=>{
+
+        socket.on('update-lobby',(room)=>{setRoom(room)});
+
+    },[])
+
+    
+
+    const ExitRoom= ()=>{
+        socket.emit('leave-room','1')
+    }
     return(
     <ImageBackground source={require('../assets/backgroundLobby.jpg')} style={styles.image}>
         <View>
-            <TouchableOpacity onPress={()=>navigation.navigate("HomePage")}>
+            <TouchableOpacity onPress={()=>{ExitRoom(); navigation.navigate("HomePage");}}>
                 <Text style={styles.quitButton}>Quitter</Text>
             </TouchableOpacity>
         </View>
         <View style={styles.container}>
             <Text style={styles.containerTitle}>Lobby</Text>
+            <Text style={styles.containerTitle}>{room.name}</Text>
         
             <View style={styles.PlayerList}>
-                <Text style={styles.Player}>Marina Patry</Text>
-                <Text style={styles.Player}>Marc-André Parent</Text>
+                {room.users.map((key,user)=>(<Text key={key} style={styles.Player}>{user.name}</Text>))}
             </View>
     
             <TouchableOpacity>

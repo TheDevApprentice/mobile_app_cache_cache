@@ -1,10 +1,24 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import React from "react"
+import React,{useEffect} from "react"
 import { useNavigation } from '@react-navigation/native';
 import {firebase} from "../firebaseConfig";
 
-export default function DashboardPage() {
+export default function HomePage({socket}) {
   const navigation = useNavigation();
+
+  useEffect(() => {
+    socket.on('user-infos-request', ()=>{socket.emit('send-user-infos',{firebaseId: "a",username : "b"})});
+  
+    return ()=>{
+      socket.off('user-infos-request', ()=>{socket.emit('send-user-infos',{firebaseId: "a",username : "b"})});
+    }
+  
+  }, []);
+
+  const JoinLobby = ()=>{
+    socket.emit('join-room','1');
+  }
+
   return (
     <View style = {styles.container}>
 
@@ -13,6 +27,7 @@ export default function DashboardPage() {
     <TouchableOpacity
       style = {styles.button}
       onPress={()=> {
+        JoinLobby();
         navigation.navigate("LobbyPage");
       }}
     >
