@@ -9,24 +9,28 @@ const app = express();
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: '*'
+  }
+});
 
 const __filename = fileURLToPath(import.meta.url);
 
 const __dirname = path.dirname(__filename);
-
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-});
 
 let users = [];
 let rooms = [];
 
 io.on('connection', (socket) => {
     console.log('a user connected');
-    users.push(new User(socket.id, ""));
-    console.log(users);
+    io.to(socket.id).emit('user-infos-request');
     sendRoomList(socket.id, rooms);
+
+    socket.on('send-user-infos', (userObj) => {
+      users.push(new User(socket.id, userObj.username, userObj.firebaseId));
+      console.log(users);
+    });
 
     socket.on('update-room-list', () => {
       sendRoomList(socket.id, rooms);
@@ -45,6 +49,14 @@ io.on('connection', (socket) => {
       removeUserFromRoom(room, socket.id);
       socket.leave(room);
       closeEmptyRooms();
+    });
+
+    socket.on('ping', ()=>{
+      clearTimeout(socket.timeout);
+      console.log("ping")
+      socket.timeout = setTimeout(()=>{
+        socket.disconnect();
+      }, 12000);
     });
 
     socket.on('disconnect', () => {

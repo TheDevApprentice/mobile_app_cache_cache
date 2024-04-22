@@ -1,9 +1,10 @@
 'use strict';
 
 class User{
-    constructor(ioId, name){
+    constructor(ioId, name, firebaseId){
         this.ioId = ioId;
         this.name = name;
+        this.firebaseId = firebaseId;
         this.ready = false;
         this.coordinate = new Coordinate(0,0);
     }

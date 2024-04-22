@@ -46,6 +46,10 @@
           connectedRoom = "";
         });
 
+        socket.on('user-infos-request', () => {
+          socket.emit('send-user-infos', {firebaseId: "a", username: "b"});
+        });
+
         socket.on('room-joined', (room)=> {
           connectedRoom = room;
         });
@@ -56,7 +60,9 @@
 
         socket.on('room-list-given', (roomList) => {
           roomListHTML.innerHTML = roomList.map(room => {
-            return `<button onclick="${()=>{joinRoom(room.name)}}">${room.name} ${room.userCount}/8</button>`
+            if (!room.gameIsActive){
+              return `<button onclick="${()=>{joinRoom(room.name)}}">${room.name} ${room.userCount}/8</button>`
+            }
           }).join('');
         });
 
