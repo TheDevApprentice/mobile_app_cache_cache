@@ -12,6 +12,7 @@ const Stack = createStackNavigator();
 
 import {firebase} from "./firebaseConfig";
 import LobbyPage from './Components/LobbyPage';
+import InGameView from './Components/InGameView';
 
 function App() {
 
@@ -43,7 +44,7 @@ function App() {
   return (
     <Stack.Navigator>
       <Stack.Screen name='HomePage' component={HomePage} options={{headerShown:false}}/>
-      <Stack.Screen name='LobbyPage' component={LobbyPage} options={{headerShown:false}}/>
+      <Stack.Screen name='LobbyPage' component={InGameView} options={{headerShown:false}}/>
     </Stack.Navigator>
   );
 }
