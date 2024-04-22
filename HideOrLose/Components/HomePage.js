@@ -1,13 +1,14 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import React,{useEffect} from "react"
+import React,{useContext, useEffect} from "react"
 import { useNavigation } from '@react-navigation/native';
 import {firebase} from "../firebaseConfig";
 
-export default function HomePage({socket}) {
+export default function HomePage({socket, StartPing, StopPing}) {
   const navigation = useNavigation();
 
   useEffect(() => {
     socket.connect();
+    StartPing();
     socket.on('user-infos-request', ()=>{socket.emit('send-user-infos',{firebaseId: "a",username : "b"})});
   
     return ()=>{
@@ -38,7 +39,9 @@ export default function HomePage({socket}) {
     <TouchableOpacity
       style = {styles.button}
       onPress={()=> {
-        firebase.auth().signOut(); 
+        firebase.auth().signOut();
+        StopPing();
+        socket.disconnect();
         navigation.navigate("LoginPage");
       }}
     >
