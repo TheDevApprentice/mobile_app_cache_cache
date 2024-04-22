@@ -7,10 +7,11 @@ export default function HomePage({socket}) {
   const navigation = useNavigation();
 
   useEffect(() => {
+    socket.connect();
     socket.on('user-infos-request', ()=>{socket.emit('send-user-infos',{firebaseId: "a",username : "b"})});
   
     return ()=>{
-      socket.off('user-infos-request', ()=>{socket.emit('send-user-infos',{firebaseId: "a",username : "b"})});
+      socket.off('user-infos-request');
     }
   
   }, []);

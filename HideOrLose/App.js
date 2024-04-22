@@ -1,6 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import 'react-native-gesture-handler';
 import LoginPage from './Components/LoginPage';
 import HomePage from './Components/HomePage';
@@ -15,8 +15,8 @@ function App() {
   const Stack = createStackNavigator();
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState();
-  const socket = io("http://10.4.1.181:3000");
-
+  const [socket, setSocket] = useState();
+  
   function onAuthStateChanged(user)
   {
     setUser(user);
@@ -24,6 +24,10 @@ function App() {
   }
 
   useEffect(() => {
+    setSocket(io("http://10.4.1.181:3000", {
+        autoConnect: false
+    })); 
+
     const subscriber = firebase.auth().onAuthStateChanged(onAuthStateChanged);
     return subscriber;
   }, []);

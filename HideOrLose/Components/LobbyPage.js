@@ -1,20 +1,19 @@
 import { StyleSheet, Text, View, TouchableOpacity,ImageBackground, Button, Pressable} from 'react-native';
 import React, {useEffect, useState} from "react"
 import { useNavigation } from '@react-navigation/native';
-import {firebase} from "../firebaseConfig";
-
 
 export default function LobbyPage({socket}){
     const navigation = useNavigation();
     const [room,setRoom] = useState({name:'',users:[{name:''}]});
 
     useEffect(()=>{
-
         socket.on('update-lobby',(room)=>{setRoom(room)});
 
+        return ()=>{
+            socket.off('update-lobby');
+          }
     },[])
 
-    
 
     const ExitRoom= ()=>{
         socket.emit('leave-room','1')
