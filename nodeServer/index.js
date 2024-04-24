@@ -24,8 +24,6 @@ let rooms = [];
 
 io.on('connection', (socket) => {
     console.log('a user connected');
-    io.to(socket.id).emit('user-infos-request');
-    sendRoomList(socket.id, rooms);
 
     socket.on('send-user-infos', (userObj) => {
       users.push(new User(socket.id, userObj.username, userObj.firebaseId));
@@ -45,18 +43,23 @@ io.on('connection', (socket) => {
       socket.join(room);
     });
 
+    socket.on('switch-ready', ()=>{
+      let user = getUserById(socket.id);
+      user.ready = true;
+      updateUser(user);
+    });
+
     socket.on('leave-room', (room) => {
       removeUserFromRoom(room, socket.id);
       socket.leave(room);
       closeEmptyRooms();
     });
 
-    socket.on('ping', ()=>{
-      clearTimeout(socket.timeout);
-      console.log("ping")
-      socket.timeout = setTimeout(()=>{
-        socket.disconnect();
-      }, 12000);
+    socket.on('leave-app', ()=>{
+      disconnectUserFromRooms(socket.id);
+      closeEmptyRooms();
+      users = users.filter(u => u.ioId !== socket.id);
+      console.log(users);
     });
 
     socket.on('disconnect', () => {
@@ -83,7 +86,7 @@ const serverActionsLoop = setInterval(()=>{
       }
     });
   }
-}, 500);
+}, 200);
 
 const isNewRoom = (roomName) => {
   if (rooms.length === 0){
@@ -127,4 +130,11 @@ const disconnectUserFromRooms = (userId) => {
 
 const closeEmptyRooms = () => {
   rooms = rooms.filter(room => room.users.length > 0);
+};
+
+const updateUser = (user) => {
+  users = users.map((u)=> ( u.ioId === user.ioId ? {...u, ...user}: u));
+  rooms.forEach(room => {
+    room.users = room.users.map((u)=> ( u.ioId === user.ioId ? {...u, ...user}: u));
+  })
 };
