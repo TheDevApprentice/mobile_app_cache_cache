@@ -16,7 +16,8 @@ export default function LoginPage() {
           setPassword('');
           navigation.navigate("HomePage");
         } catch (error) {
-          console.error('Login error:', error.message);
+        //   console.error('Login error:', error.message);
+          alert("Le mot de passe ou l'utilisateur n'est pas correct, veuillez reesayyer")
         }
       };
 

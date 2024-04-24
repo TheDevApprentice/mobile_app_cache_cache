@@ -1,20 +1,22 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import React,{useContext, useEffect} from "react"
+import React,{useEffect} from "react"
 import { useNavigation } from '@react-navigation/native';
 import {firebase} from "../firebaseConfig";
 
-export default function HomePage({socket, StartPing, StopPing}) {
+export default function HomePage({socket}) {
   const navigation = useNavigation();
+  const currentUser = firebase.auth().currentUser; 
+  let userDb = null;
 
   useEffect(() => {
-    socket.connect();
-    StartPing();
-    socket.on('user-infos-request', ()=>{socket.emit('send-user-infos',{firebaseId: "a",username : "b"})});
-  
-    return ()=>{
-      socket.off('user-infos-request');
-    }
-  
+    firebase.firestore().collection("Users").doc(currentUser.uid).get()
+    .then((doc) => {
+      userDb = doc.data(); 
+      console.log("userdata",userDb)
+      
+    }).then((doc) => {
+      socket.emit('send-user-infos',{firebaseId: currentUser.uid, username : userDb.firstname});  
+    })  
   }, []);
 
   const JoinLobby = ()=>{
@@ -40,8 +42,7 @@ export default function HomePage({socket, StartPing, StopPing}) {
       style = {styles.button}
       onPress={()=> {
         firebase.auth().signOut();
-        StopPing();
-        socket.disconnect();
+        socket.emit("leave-app");
         navigation.navigate("LoginPage");
       }}
     >
