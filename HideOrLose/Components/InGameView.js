@@ -36,7 +36,7 @@ export default function InGameView() {
 
     requestLocationPermission();
 
-    Gyroscope.addListener(data => {
+    Magnetometer.addListener(data => {
       const { x, y, z } = data;
       const rotation = Math.atan2(y, x) * (180 / Math.PI);
       setArrowRotation(rotation);
