@@ -89,8 +89,6 @@ const styles = StyleSheet.create({
         
     },
     quitButton:{
-        position: "absolute", 
-        top: 5,
         borderWidth: 1,
         backgroundColor: '#DC143C',
         borderRadius:5,
