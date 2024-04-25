@@ -54,6 +54,7 @@ function App() {
       <Stack.Screen name='InGameView' options={{headerShown:false}}>
       {()=> <InGameView socket={socket}/>}
       </Stack.Screen>
+
     </Stack.Navigator>
   )
 }
