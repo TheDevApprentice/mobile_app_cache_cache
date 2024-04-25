@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ImageBackground, Animated, Easing, Dimensions } from 'react-native';
 import { Magnetometer, Gyroscope, Accelerometer } from 'expo-sensors';
+import { useNavigation } from '@react-navigation/native';
 import { requestForegroundPermissionsAsync, watchPositionAsync, Accuracy } from 'expo-location';
 import Svg, { Circle, Polygon } from 'react-native-svg';
 
 export default function InGameView() {
+
+  const navigation = useNavigation();
+
   const [magnetometerData, setMagnetometerData] = useState({});
   const [arrowRotation, setArrowRotation] = useState(0);
   const [arrowPosition, setArrowPosition] = useState({ x: 0, y: 0 });
