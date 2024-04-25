@@ -25,7 +25,7 @@ function App() {
   }
 
   useEffect(() => {
-    setSocket(io("http://10.4.1.180:3000"));
+    setSocket(io("http://10.4.1.175:3000"));
 
     const subscriber = firebase.auth().onAuthStateChanged(onAuthStateChanged);
 
