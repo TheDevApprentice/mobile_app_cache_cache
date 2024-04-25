@@ -44,6 +44,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('switch-ready', ()=>{
+      console.log('ready request by', socket.id);
       let user = getUserById(socket.id);
       user.ready = true;
       updateUser(user);
@@ -86,7 +87,7 @@ const serverActionsLoop = setInterval(()=>{
       }
     });
   }
-}, 200);
+}, 1000);
 
 const isNewRoom = (roomName) => {
   if (rooms.length === 0){
@@ -134,7 +135,29 @@ const closeEmptyRooms = () => {
 
 const updateUser = (user) => {
   users = users.map((u)=> ( u.ioId === user.ioId ? {...u, ...user}: u));
-  rooms.forEach(room => {
-    room.users = room.users.map((u)=> ( u.ioId === user.ioId ? {...u, ...user}: u));
-  })
+  let room = getRoomFromUser(user.ioId);
+    if (room && allPlayersAreReady(room.users)){
+      room.gameIsActive = true;
+      io.in(room.name).emit('game-start');
+    }
+};
+
+const getRoomFromUser = (userId) => {
+  rooms.forEach((room)=>{
+    if (room.users.filter(r => r.ioId === userId).length === 1){
+      return room;
+    }
+  });
+  return null;
+};
+
+const allPlayersAreReady = (users) => {
+  let count = 0;
+  if (users.length < 2){
+    return false;
+  }
+  users.forEach((user)=>{
+    if (user && user.ready){ count += 1;}
+  });
+  return count === users.length;
 };
