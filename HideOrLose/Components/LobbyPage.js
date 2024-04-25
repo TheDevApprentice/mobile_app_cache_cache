@@ -8,9 +8,11 @@ export default function LobbyPage({socket}){
     
     useEffect(()=>{
         socket.on('update-lobby',(room)=>{setRoom(room)});
+        socket.on('game-start',()=>{navigation.navigate("InGameView")});
 
         return ()=>{
             socket.off('update-lobby');
+            socket.off('game-start');
           }
     },[])
 
@@ -21,8 +23,6 @@ export default function LobbyPage({socket}){
     const SendReadyNotification= ()=>{
         socket.emit('switch-ready')
     }
-
-    socket.on('everyone-ready',()=>{navigation.navigate("InGameView")});
 
     return(
     <ImageBackground source={require('../assets/backgroundLobby.jpg')} style={styles.image}>
@@ -89,8 +89,6 @@ const styles = StyleSheet.create({
         
     },
     quitButton:{
-        position: "absolute", 
-        top: 5,
         borderWidth: 1,
         backgroundColor: '#DC143C',
         borderRadius:5,
