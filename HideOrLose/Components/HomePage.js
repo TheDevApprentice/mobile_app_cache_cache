@@ -1,10 +1,28 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import React from "react"
+import React,{useEffect} from "react"
 import { useNavigation } from '@react-navigation/native';
 import {firebase} from "../firebaseConfig";
 
-export default function DashboardPage() {
+export default function HomePage({socket}) {
   const navigation = useNavigation();
+  const currentUser = firebase.auth().currentUser; 
+  let userDb = null;
+
+  useEffect(() => {
+    firebase.firestore().collection("Users").doc(currentUser.uid).get()
+    .then((doc) => {
+      userDb = doc.data(); 
+      console.log("userdata",userDb)
+      
+    }).then((doc) => {
+      socket.emit('send-user-infos',{firebaseId: currentUser.uid, username : userDb.firstname});  
+    })  
+  }, []);
+
+  const JoinLobby = ()=>{
+    socket.emit('join-room','1');
+  }
+
   return (
     <View style = {styles.container}>
 
@@ -13,6 +31,7 @@ export default function DashboardPage() {
     <TouchableOpacity
       style = {styles.button}
       onPress={()=> {
+        JoinLobby();
         navigation.navigate("LobbyPage");
       }}
     >
@@ -22,7 +41,8 @@ export default function DashboardPage() {
     <TouchableOpacity
       style = {styles.button}
       onPress={()=> {
-        firebase.auth().signOut(); 
+        firebase.auth().signOut();
+        socket.emit("leave-app");
         navigation.navigate("LoginPage");
       }}
     >

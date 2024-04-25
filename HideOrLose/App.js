@@ -7,12 +7,16 @@ import HomePage from './Components/HomePage';
 import RegisterPage from './Components/RegisterPage';
 import ForgotPassword from './Components/ForgotPassword';
 import LobbyPage from './Components/LobbyPage';
+import InGameView from './Components/InGameView';
 import {firebase} from "./firebaseConfig";
+import { io } from "socket.io-client";
+import { Stop } from 'react-native-svg';
 
 function App() {
   const Stack = createStackNavigator();
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState();
+  const [socket, setSocket] = useState();
 
   function onAuthStateChanged(user)
   {
@@ -21,8 +25,14 @@ function App() {
   }
 
   useEffect(() => {
+    setSocket(io("http://10.4.1.180:3000"));
+
     const subscriber = firebase.auth().onAuthStateChanged(onAuthStateChanged);
-    return subscriber;
+
+    return ()=>{
+      subscriber();
+    }
+
   }, []);
 
   if (initializing) return null;
@@ -32,8 +42,18 @@ function App() {
       <Stack.Screen name='LoginPage' component={LoginPage} options={{headerShown:false}}/>
       <Stack.Screen name='RegisterPage' component={RegisterPage} options={{headerShown:false}}/>
       <Stack.Screen name='ForgotPassword' component={ForgotPassword} options={{headerShown:false}}/>
-      <Stack.Screen name='HomePage' component={HomePage} options={{headerShown:false}}/>
-      <Stack.Screen name='LobbyPage' component={LobbyPage} options={{headerShown:false}}/>
+
+      <Stack.Screen name='HomePage' options={{headerShown:false}}>
+      {()=> <HomePage socket={socket}/>}
+      </Stack.Screen>
+
+      <Stack.Screen name='LobbyPage' options={{headerShown:false}}>
+      {()=> <LobbyPage socket={socket}/>}
+      </Stack.Screen>
+
+      <Stack.Screen name='InGameView' options={{headerShown:false}}>
+      {()=> <InGameView socket={socket}/>}
+      </Stack.Screen>
     </Stack.Navigator>
   )
 }
