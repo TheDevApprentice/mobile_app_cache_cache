@@ -8,6 +8,23 @@ export default function LoginPage() {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [errors, setErrors] = useState({}); 
+    const [isFormValid, setIsFormValid] = useState(false);
+
+    const Validate = () => {
+        let errors = {};
+
+        if (!/\S+@\S+\.\S+/.test(email) && email != "") {
+            errors.email = 'Le format du email n\'est pas valide';
+        }
+
+        if (!password) {
+          errors.password = 'Veuillez entrer votre mot de passe!';
+        }
+
+        setErrors(errors);
+        setIsFormValid(Object.keys(errors).length === 0);
+    }
 
     const handleLogin = async () => {
         try {
@@ -16,7 +33,10 @@ export default function LoginPage() {
           setPassword('');
           navigation.navigate("HomePage");
         } catch (error) {
-          console.error('Login error:', error.message);
+            if (error.message == "Firebase: The supplied auth credential is incorrect, malformed or has expired. (auth/invalid-credential).")
+            {
+                alert("Le courriel ou le mot de passe est invalide!");
+            }
         }
       };
 
@@ -33,6 +53,9 @@ export default function LoginPage() {
                   onChangeText = {(email) => setEmail(email)}
                   value = {email}
               />
+              <Text style={styles.error}> 
+                {errors.email} 
+              </Text>
               <TextInput 
                   style={styles.textInput}
                   placeholder="Mot de passe"
@@ -41,10 +64,18 @@ export default function LoginPage() {
                   onChangeText = {(password) => setPassword(password)}
                   value = {password}
               />
+              <Text style={styles.error}> 
+                {errors.password} 
+              </Text>
               </View>
               <TouchableOpacity 
                   style={styles.button}
-                  onPress={handleLogin}
+                  onPress={() => {
+                    Validate();
+                    if (isFormValid) {
+                        handleLogin();
+                    }
+                  }}
               >
                   <Text style = {styles.buttonText}>Se connecter</Text>
               </TouchableOpacity>

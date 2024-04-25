@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, ImageBackground } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {firebase} from "../firebaseConfig";
 import { useNavigation } from '@react-navigation/native';
 
@@ -22,7 +22,7 @@ export default function RegistrationPage() {
     if (!lastName) {
       errors.lastName = 'Le nom est obligatoire';
     }
-
+    
     if (!email) {
       errors.email = 'L\'email est obligatoire';
     } else if (!/\S+@\S+\.\S+/.test(email) && email != "") {
