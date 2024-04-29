@@ -42,7 +42,7 @@ function App() {
 
   return (
     <Stack.Navigator>
-      <Stack.Screen name='LoginPage' component={LoginPage} options={{headerShown:false}}/>
+      {/* <Stack.Screen name='LoginPage' component={LoginPage} options={{headerShown:false}}/>
       <Stack.Screen name='RegisterPage' component={RegisterPage} options={{headerShown:false}}/>
       <Stack.Screen name='ForgotPassword' component={ForgotPassword} options={{headerShown:false}}/>
 
@@ -52,7 +52,7 @@ function App() {
 
       <Stack.Screen name='LobbyPage' options={{headerShown:false}}>
       {()=> <LobbyPage socket={socket}/>}
-      </Stack.Screen>
+      </Stack.Screen> */}
 
       <Stack.Screen name='InGameView' options={{headerShown:false}}>
       {()=> <InGameView socket={socket}/>}

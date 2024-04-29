@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ImageBackground, Animated, Easing, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ImageBackground, Animated, Dimensions } from 'react-native';
 import { Magnetometer, Gyroscope, Accelerometer } from 'expo-sensors';
 import { useNavigation } from '@react-navigation/native';
 import { requestForegroundPermissionsAsync, watchPositionAsync, Accuracy } from 'expo-location';
-import Svg, { Circle, Polygon } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 export default function InGameView() {
-
   const navigation = useNavigation();
-
-  const [magnetometerData, setMagnetometerData] = useState({});
   const [arrowRotation, setArrowRotation] = useState(0);
-  const [arrowPosition, setArrowPosition] = useState({ x: 0, y: 0 });
   const [userLocation, setUserLocation] = useState(null);
-  const targetLocation = { latitude: 40.7128, longitude: -74.0060 };
+  const [circleAnimation] = useState(new Animated.Value(0));
+  const [colorsArray, setColorsArray] = useState(['#FF0000', '#00FF00', '#0000FF']);
+  const [strokeOffsets, setStrokeOffsets] = useState([]);
 
   useEffect(() => {
     const requestLocationPermission = async () => {
@@ -21,7 +19,7 @@ export default function InGameView() {
       if (status === 'granted') {
         const subscription = watchPositionAsync(
           {
-            accuracy: 6,
+            accuracy: Accuracy.High,
             timeInterval: 1000,
             distanceInterval: 10,
           },
@@ -41,30 +39,42 @@ export default function InGameView() {
     requestLocationPermission();
 
     Magnetometer.addListener(data => {
-      const { x, y, z } = data;
+      const { x, y } = data;
       const rotation = Math.atan2(y, x) * (180 / Math.PI);
       setArrowRotation(rotation);
     });
+
+    animateCircle();
 
     return () => {
       Gyroscope.removeAllListeners();
     };
   }, []);
 
-  const updateArrowPosition = (data) => {
-    if (!userLocation) return;
-    const { latitude, longitude } = userLocation;
-    const angle = data?.magneticHeading || 0;
-    const radius = 150;
+  const animateCircle = () => {
+    const circleColorsAnimation = colorsArray.map((color, index) => {
+      return Animated.timing(circleAnimation, {
+        toValue: (index + 1) / colorsArray.length,
+        duration: 1000,
+        useNativeDriver: true
+      });
+    });
 
-    const x = screenWidth / 2 + radius * Math.cos(angle * Math.PI / 180); // Conversion degrés en radians
-    const y = screenWidth / 2 + radius * Math.sin(angle * Math.PI / 180); // Conversion degrés en radians
-
-    setArrowPosition({ x, y });
+    Animated.sequence(circleColorsAnimation).start();
   };
 
+  useEffect(() => {
+    const offsets = colorsArray.map((color, index) => {
+      return circleAnimation.interpolate({
+        inputRange: [(index) / colorsArray.length, (index + 1) / colorsArray.length],
+        outputRange: [(index) * 100, (index + 1) * 100]
+      });
+    });
+
+    setStrokeOffsets(offsets);
+  }, [circleAnimation, colorsArray]);
+
   const screenWidth = Dimensions.get('window').width;
-  const screenHeight = Dimensions.get('window').height;
 
   return (
     <ImageBackground source={require('../assets/backgroundLobby.jpg')} style={styles.image}>
@@ -76,31 +86,47 @@ export default function InGameView() {
           <Text style={styles.containerTitle}>Chasseur</Text>
         </View>
         
-        <Animated.View style={[styles.arrowContainer, { transform: [{ rotate: `${arrowRotation}deg` }] }]}>
-          <Svg
-            height={screenWidth * 0.8}
-            width={screenWidth * 0.8}
-            viewBox={`0 0 ${screenWidth} ${screenWidth}`}
-            style={styles.boussolecontainer}
-          >
-            <Circle
-              cx={screenWidth / 2}
-              cy={screenWidth / 2}
-              r={(screenWidth * 0.8) / 2}
-              stroke="black"
-              strokeWidth="2"
+        <Svg
+          height={screenWidth * 0.8}
+          width={screenWidth * 0.8}
+          viewBox={`0 0 ${screenWidth} ${screenWidth}`}
+          style={[styles.boussolecontainer, { transform: [{ rotate: `${arrowRotation}deg` }] }]}
+        >
+          {colorsArray.map((color, index) => (
+            <Path
+              key={index}
+              d={describeArc(screenWidth / 2, screenWidth / 2, (screenWidth * 0.8) / 2, -235, 360 / colorsArray.length)}
               fill="transparent"
+              stroke={color}
+              strokeWidth="20"
+              strokeDasharray={[1000, 1000]}
+              strokeDashoffset={strokeOffsets[index]}
             />
-              <Polygon
-                points={`${screenWidth / 2},${screenWidth / 2} ${screenWidth / 2 - 10},${screenWidth / 2 + 20} ${screenWidth / 2 + 10},${screenWidth / 2 + 20}`}
-                fill="black"
-              />
-          </Svg>
-        </Animated.View>
+          ))}
+        </Svg>
       </View>
     </ImageBackground>
   );
 }
+
+const describeArc = (x, y, radius, startAngle, endAngle) => {
+  const startRadians = (startAngle - 90) * Math.PI / 180;
+  const endRadians = (endAngle - 90) * Math.PI / 180;
+
+  const largeArcFlag = endRadians - startRadians <= Math.PI ? "0" : "1";
+
+  const startX = x + radius * Math.cos(startRadians);
+  const startY = y + radius * Math.sin(startRadians);
+  const endX = x + radius * Math.cos(endRadians);
+  const endY = y + radius * Math.sin(endRadians);
+
+  const arc = [
+    "M", startX, startY,
+    "A", radius, radius, 0, largeArcFlag, 1, endX, endY
+  ].join(" ");
+
+  return arc;
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -108,9 +134,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 50,
   },
-
   container_infos: {
-
   },
   containerTitle: {
     position: "relative",
@@ -142,7 +166,5 @@ const styles = StyleSheet.create({
     position: "relative",
     left: 0, 
     right: 0
-  },
-  arrow: {
   }
 });
