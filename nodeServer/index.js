@@ -134,26 +134,39 @@ const closeEmptyRooms = () => {
 };
 
 const updateUser = (user) => {
-  users = users.map((u)=> ( u.ioId === user.ioId ? {...u, ...user}: u));
-  let room = getRoomFromUser(user.ioId);
+  try{
+    users = users.map((u)=> ( u.ioId === user.ioId ? {...u, ...user}: u));
+    console.log("user before if", user)
+    //let room = getRoomFromUser(user.ioId)
+    let room = rooms[0];
+    console.log("room before if", room)
+
     if (room && allPlayersAreReady(room.users)){
       room.gameIsActive = true;
+      // console.log("room after if", room.name)
       io.in(room.name).emit('game-start');
     }
+  }
+  catch{
+    console.log("Error Happened"); 
+  }
 };
 
 const getRoomFromUser = (userId) => {
+  console.log("getRoomFromUser rooms", JSON.stringify(rooms) )
   rooms.forEach((room)=>{
-    if (room.users.filter(r => r.ioId === userId).length === 1){
-      return room;
-    }
+    console.log("UserIdBefore if ",room.users);
+    room.users.forEach((user)=>{
+      if(user.ioId == userId){
+        return room;
+      }
+    })
   });
-  return null;
 };
 
 const allPlayersAreReady = (users) => {
   let count = 0;
-  if (users.length < 2){
+  if (users.length < 0){
     return false;
   }
   users.forEach((user)=>{

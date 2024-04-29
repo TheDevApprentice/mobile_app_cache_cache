@@ -11,6 +11,7 @@ import InGameView from './Components/InGameView';
 import {firebase} from "./firebaseConfig";
 import { io } from "socket.io-client";
 import { Stop } from 'react-native-svg';
+import Constants from 'expo-constants';
 
 function App() {
   const Stack = createStackNavigator();
@@ -25,10 +26,12 @@ function App() {
   }
 
   useEffect(() => {
-    setSocket(io("http://10.4.1.175:3000"));
-
+    const hostUri = Constants.expoConfig.hostUri;
+    const ipAddress = hostUri.split(":")[0].trim();
+    const socketUrl = `http://${ipAddress}:3000`;
+    setSocket(io(socketUrl));
+    
     const subscriber = firebase.auth().onAuthStateChanged(onAuthStateChanged);
-
     return ()=>{
       subscriber();
     }
