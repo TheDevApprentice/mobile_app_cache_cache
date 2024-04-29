@@ -12,6 +12,7 @@ export default function InGameView() {
   const [circleAnimation] = useState(new Animated.Value(0));
   const [colorsArray, setColorsArray] = useState(['#FF0000', '#00FF00', '#0000FF']);
   const [strokeOffsets, setStrokeOffsets] = useState([]);
+  const [userPosition, setUserPosition] = useState(0); // Position initiale
 
   useEffect(() => {
     const requestLocationPermission = async () => {
@@ -74,6 +75,11 @@ export default function InGameView() {
     setStrokeOffsets(offsets);
   }, [circleAnimation, colorsArray]);
 
+  useEffect(() => {
+    const position = (arrowRotation + 360) % 360;
+    setUserPosition(position);
+  }, [arrowRotation]);
+
   const screenWidth = Dimensions.get('window').width;
 
   return (
@@ -103,6 +109,13 @@ export default function InGameView() {
               strokeDashoffset={strokeOffsets[index]}
             />
           ))}
+          
+          <Circle
+            cx={screenWidth / 2 + (screenWidth * 0.8) / 2 * Math.cos((userPosition - 90) * Math.PI / 180)}
+            cy={screenWidth / 2 + (screenWidth * 0.8) / 2 * Math.sin((userPosition - 90) * Math.PI / 180)}
+            r={10} // Rayon du cercle représentant l'utilisateur
+            fill="red" // Couleur du cercle représentant l'utilisateur
+          />
         </Svg>
       </View>
     </ImageBackground>
