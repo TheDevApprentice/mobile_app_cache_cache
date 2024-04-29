@@ -12,7 +12,7 @@ export default function InGameView() {
   const [circleAnimation] = useState(new Animated.Value(0));
   const [colorsArray, setColorsArray] = useState(['#FF0000', '#00FF00', '#0000FF']);
   const [strokeOffsets, setStrokeOffsets] = useState([]);
-  const [userPosition, setUserPosition] = useState(0); // Position initiale
+  const [userPosition, setUserPosition] = useState({ latitude: 46.8131, longitude: 71.2075 }); // Position initiale
 
   useEffect(() => {
     const requestLocationPermission = async () => {
