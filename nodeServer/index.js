@@ -80,7 +80,7 @@ const serverActionsLoop = setInterval(()=>{
   if (rooms.length > 0){
     rooms.forEach(room => {
       if (room.gameIsActive){
-        io.in(room.name).emit('game-infos-request');
+        checkGameState(room);
       }
       else{
         io.in(room.name).emit('update-lobby', room);
@@ -90,47 +90,67 @@ const serverActionsLoop = setInterval(()=>{
 }, 1000);
 
 const isNewRoom = (roomName) => {
-  if (rooms.length === 0){
-    return true;
-  }
-  else{
-    for(let i=0; i < rooms.length; i++){
-      if (rooms[i].name == roomName){
-        return false;
+  try{
+    if (rooms.length === 0){
+      return true;
+    }
+    else{
+      for(let i=0; i < rooms.length; i++){
+        if (rooms[i].name == roomName){
+          return false;
+        }
       }
     }
+    return true;
   }
-  return true;
+  catch{return true};
 };
 
 const sendRoomList = (ioId, rooms) => {
-  io.to(ioId).emit(
-    'room-list-given',
-    rooms.map(r => ({name: r.name, userCount: r.users.length})));
+  try{
+    io.to(ioId).emit(
+      'room-list-given',
+      rooms.map(r => ({name: r.name, userCount: r.users.length})));
+  }
+  catch{console.log("Error Happened");}
 };
 
 const getUserById = (id) => {
-  return users.find(u => u.ioId === id);
+  try{
+    return users.find(u => u.ioId === id);
+  }
+  catch{return null};
 };
 
 const addUserToRoom = (room, user) => {
-  let index = rooms.findIndex(r => r.name === room);
-  rooms[index].users.push(user);
+  try{
+    let index = rooms.findIndex(r => r.name === room);
+    rooms[index].users.push(user);
+  }
+  catch{console.log("Error Happened");}
 };
 
 const removeUserFromRoom = (room, userId) => {
-  let index = rooms.findIndex(r => r.name === room);
-  rooms[index].users = rooms[index].users.filter(u => u.ioId !== userId);
+  try{
+    let index = rooms.findIndex(r => r.name === room);
+    rooms[index].users = rooms[index].users.filter(u => u.ioId !== userId);
+  }
+  catch{console.log("Error Happened");}
 };
 
 const disconnectUserFromRooms = (userId) => {
-  rooms.forEach(room => {
-    room.users = room.users.filter(u => u.ioId !== userId);
-  })
+  try{
+    rooms.forEach(room => {
+      room.users = room.users.filter(u => u.ioId !== userId);
+    });
+  }catch{console.log("Error Happened");}
 };
 
 const closeEmptyRooms = () => {
-  rooms = rooms.filter(room => room.users.length > 0);
+  try{
+    rooms = rooms.filter(room => room.users.length > 0);
+  }
+  catch{console.log("Error Happened");}
 };
 
 const updateUser = (user) => {
@@ -145,32 +165,60 @@ const updateUser = (user) => {
       room.gameIsActive = true;
       // console.log("room after if", room.name)
       io.in(room.name).emit('game-start');
+      chooseHunter(room.users);
     }
   }
-  catch{
-    console.log("Error Happened"); 
-  }
+  catch{console.log("Error Happened");}
 };
 
 const getRoomFromUser = (userId) => {
-  console.log("getRoomFromUser rooms", JSON.stringify(rooms) )
-  rooms.forEach((room)=>{
-    console.log("UserIdBefore if ",room.users);
-    room.users.forEach((user)=>{
-      if(user.ioId == userId){
-        return room;
-      }
-    })
-  });
+  try{
+    console.log("getRoomFromUser rooms", JSON.stringify(rooms) )
+    rooms.forEach((room)=>{
+      console.log("UserIdBefore if ",room.users);
+      room.users.forEach((user)=>{
+        if(user.ioId == userId){
+          return room;
+        }
+      })
+    });
+  }
+  catch{return null;}
 };
 
 const allPlayersAreReady = (users) => {
-  let count = 0;
-  if (users.length < 0){
+  try{
+    let count = 0;
+    if (users.length < 0){
+      return false;
+    }
+    users.forEach((user)=>{
+      if (user && user.ready){ count += 1;}
+    });
+    return count === users.length;
+  }
+  catch{
+    console.log("Error Happened");
     return false;
   }
-  users.forEach((user)=>{
-    if (user && user.ready){ count += 1;}
-  });
-  return count === users.length;
+};
+
+const chooseHunter = (users) =>{
+  try{
+    let hunterIndex = Math.floor(Math.random() * users.length);
+    for(let i = 0; i < users.length; i++){
+      if(i == hunterIndex){
+        users[i].isHunter = true;
+        io.to(users[i].ioId).emit('is-hunter');
+      }
+    };
+  }
+  catch{console.log("Error Happened");}
+};
+
+const checkGameState = (room) =>{
+  let users = room.users;
+  let hunter = users.find(user => user.isHunter == true);
+
+  io.in(room.name).emit('update-game', room);
 };

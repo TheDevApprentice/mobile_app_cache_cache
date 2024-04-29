@@ -6,6 +6,8 @@ class User{
         this.name = name;
         this.firebaseId = firebaseId;
         this.ready = false;
+        this.eliminated = false;
+        this.isHunter = false;
         this.coordinate = new Coordinate(0,0);
     }
 };
