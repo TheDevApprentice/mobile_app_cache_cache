@@ -15,6 +15,7 @@ export default function InGameView({socket}) {
   const [arrowPosition, setArrowPosition] = useState({ x: 0, y: 0 });
   const [userLocation, setUserLocation] = useState(null);
   const [gameInfo, setGameInfo] = useState("");
+  const [timer,setTimer]= useState(0);
   const targetLocation = { latitude: 40.7128, longitude: -74.0060 };
 
   useEffect(() => {
@@ -47,6 +48,10 @@ export default function InGameView({socket}) {
       setArrowRotation(rotation);
     });
 
+    socket.on("update-game", (room)=>{
+        setTimer(room.time);
+
+    });
     socket.on("game-end", (won) => {
       setGameInfo(won);
       const today = Date.now();
@@ -70,6 +75,7 @@ export default function InGameView({socket}) {
       Gyroscope.removeAllListeners();
 
       socket.off("game-end");
+      socket.off("update-game");
    };
   }, []);
   
