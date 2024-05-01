@@ -20,10 +20,12 @@ class Coordinate{
 };
 
 class Room{
-    constructor(name, users){
+    constructor(name, users, time){
         this.name = name;
         this.gameIsActive = false;
         this.users = users;
+        this.time = time;
+        this.nbEliminated = 0;
     }
 };
 

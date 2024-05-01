@@ -21,6 +21,7 @@ const __dirname = path.dirname(__filename);
 
 let users = [];
 let rooms = [];
+const radius = 10;
 
 io.on('connection', (socket) => {
     console.log('a user connected');
@@ -36,7 +37,7 @@ io.on('connection', (socket) => {
 
     socket.on('join-room', (room) => {
       if (isNewRoom(room)){
-        rooms.push(new Room(room, []));
+        rooms.push(new Room(room, [], 30));
       }
       addUserToRoom(room, getUserById(socket.id));
       io.to(socket.id).emit('room-joined', room);
@@ -47,6 +48,10 @@ io.on('connection', (socket) => {
       console.log('ready request by', socket.id);
       let user = getUserById(socket.id);
       user.ready = true;
+      updateUser(user);
+    });
+
+    socket.on('user-game-update', (user)=>{
       updateUser(user);
     });
 
@@ -62,6 +67,10 @@ io.on('connection', (socket) => {
       users = users.filter(u => u.ioId !== socket.id);
       console.log(users);
     });
+
+    socket.on('eliminate-user', ()=>{
+      checkIfCanEliminate();
+    })
 
     socket.on('disconnect', () => {
       disconnectUserFromRooms(socket.id);
@@ -156,14 +165,10 @@ const closeEmptyRooms = () => {
 const updateUser = (user) => {
   try{
     users = users.map((u)=> ( u.ioId === user.ioId ? {...u, ...user}: u));
-    console.log("user before if", user)
-    //let room = getRoomFromUser(user.ioId)
     let room = rooms[0];
-    console.log("room before if", room)
 
-    if (room && allPlayersAreReady(room.users)){
+    if (room && !room.gameIsActive && allPlayersAreReady(room.users)){
       room.gameIsActive = true;
-      // console.log("room after if", room.name)
       io.in(room.name).emit('game-start');
       chooseHunter(room.users);
     }
@@ -217,8 +222,70 @@ const chooseHunter = (users) =>{
 };
 
 const checkGameState = (room) =>{
-  let users = room.users;
-  let hunter = users.find(user => user.isHunter == true);
+  try{
+    let users = room.users;
+    let hunter = users.find(user => user.isHunter == true);
 
-  io.in(room.name).emit('update-game', room);
+    for(let i = 0; i < users.length; i++){
+      if (users[i].ioId !== hunter.ioId){
+
+      }
+    }
+
+    if(room.time === 0 || room.nbEliminated === room.users.length - 1){
+      room.gameIsActive = false;
+    }
+
+    if(room.gameIsActive){
+      room.time -= 1;
+      io.in(room.name).emit('update-game', room);
+    }
+    else{
+      const byElimination = room.nbEliminated === room.users.length - 1;
+      for(let i = 0; i < users.length; i++){
+        if (users[i].ioId !== hunter.ioId){
+          io.to(users[i].ioId).emit('game-end', !byElimination);
+        }
+        else{
+          io.to(users[i].ioId).emit('game-end', byElimination);
+        }
+      }
+    }
+  }
+  catch{console.log("Error Happened");}
 };
+
+const checkIfCanEliminate = (room, socketId) =>{
+  try{
+    let users = room.users;
+    let hunter = users.find(user => user.ioId === socketId);
+
+    for(let i = 0; i < users.length; i++){
+      if (users[i].ioId !== socketId){
+        if (closeEnough(users[i].coordinate, hunter.coordinate)){
+          users[i].eliminated = true;
+          room.nbEliminated += 1;
+        }
+      }
+    }
+  }
+  catch{console.log("Error Happened");}
+};
+
+const closeEnough = (userPosition, hunterPosition) => {
+  try{
+    const earthRadius = 6371e3;
+    const hunterLat = hunterPosition.lattitude * Math.PI/180;
+    const userLat = userPosition.lattitude * Math.PI/180;
+    const combinedLat = (hunterPosition.lattitude-userPosition.lattitude) * Math.PI/180;
+    const combinedLong = (hunterPosition.longitude-userPosition.longitude) * Math.PI/180;
+    const a = Math.sin(combinedLat/2) * Math.sin(combinedLat/2) +
+              Math.cos(hunterLat) * Math.cos(userLat) *
+              Math.sin(combinedLong/2) * Math.sin(combinedLong/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const d = earthRadius * c;
+    return d <= radius;
+  }
+  catch{console.log("Error Happened");}
+};
+
