@@ -1,183 +1,192 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ImageBackground, Animated, Dimensions } from 'react-native';
-import { Magnetometer, Gyroscope, Accelerometer } from 'expo-sensors';
+import { StyleSheet, Text, Image, View, Dimensions } from 'react-native';
+import { Magnetometer } from 'expo-sensors';
+import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
-import { requestForegroundPermissionsAsync, watchPositionAsync, Accuracy } from 'expo-location';
-import Svg, { Circle, Path } from 'react-native-svg';
+import { Grid, Col, Row } from 'react-native-easy-grid';
 
 export default function InGameView() {
   const navigation = useNavigation();
-  const [arrowRotation, setArrowRotation] = useState(0);
-  const [userLocation, setUserLocation] = useState(null);
-  const [circleAnimation] = useState(new Animated.Value(0));
-  const [colorsArray, setColorsArray] = useState(['#FF0000', '#00FF00', '#0000FF']);
-  const [strokeOffsets, setStrokeOffsets] = useState([]);
-  const [userPosition, setUserPosition] = useState({ latitude: 46.8131, longitude: 71.2075 }); // Position initiale
+  const height = Dimensions.get('window').height;
+  const width = Dimensions.get('window').width;
 
+  const [subscription, setSubscription] = useState(null);
+  const [magnetometer, setMagnetometer] = useState(0);
+
+  const [locationPermission, setLocationPermission] = useState(false);
+
+  const [myPosition, setMyPosition] = useState({ latitude: null, longitude: null });
+  const [otherUserPosition, setOtherUserPosition] = useState({ latitude: 43.598079, longitude: -51.660771 }); // Position d'un autre utilisateur
+  
   useEffect(() => {
-    const requestLocationPermission = async () => {
-      const { status } = await requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        const subscription = watchPositionAsync(
-          {
-            accuracy: Accuracy.High,
-            timeInterval: 1000,
-            distanceInterval: 10,
-          },
-          location => {
-            setUserLocation(location.coords);
-          }
-        );
-
-        return () => {
-          subscription.remove();
-        };
-      } else {
-        console.log('Permission denied for location access');
-      }
-    };
-
-    requestLocationPermission();
-
-    Magnetometer.addListener(data => {
-      const { x, y } = data;
-      const rotation = Math.atan2(y, x) * (180 / Math.PI);
-      setArrowRotation(rotation);
-    });
-
-    animateCircle();
-
+    _requestLocationPermission();
+    _subscribe();
     return () => {
-      Gyroscope.removeAllListeners();
+      _unsubscribe();
     };
   }, []);
 
-  const animateCircle = () => {
-    const circleColorsAnimation = colorsArray.map((color, index) => {
-      return Animated.timing(circleAnimation, {
-        toValue: (index + 1) / colorsArray.length,
-        duration: 1000,
-        useNativeDriver: true
-      });
-    });
-
-    Animated.sequence(circleColorsAnimation).start();
+  const _requestLocationPermission = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status === 'granted') {
+      setLocationPermission(true);
+    }
   };
 
-  useEffect(() => {
-    const offsets = colorsArray.map((color, index) => {
-      return circleAnimation.interpolate({
-        inputRange: [(index) / colorsArray.length, (index + 1) / colorsArray.length],
-        outputRange: [(index) * 100, (index + 1) * 100]
-      });
-    });
+  const _subscribe = () => {
+    setSubscription(
+      Magnetometer.addListener((data) => {
+        setMagnetometer(_angle(data));
+      })
+    );
+    _getCurrentLocation();
+  };
 
-    setStrokeOffsets(offsets);
-  }, [circleAnimation, colorsArray]);
+  const _unsubscribe = () => {
+    subscription && subscription.remove();
+    setSubscription(null);
+  };
 
-  useEffect(() => {
-    const position = (arrowRotation + 360) % 360;
-    setUserPosition(position);
-  }, [arrowRotation]);
+  const _getCurrentLocation = async () => {
+    try {
+      let { coords } = await Location.getCurrentPositionAsync({});
+      console.log("Current Position:", coords);
+      setMyPosition({ latitude: coords.latitude, longitude: coords.longitude });
+    } catch (error) {
+      console.error("Error getting current location:", error);
+    }
+  };
 
-  const screenWidth = Dimensions.get('window').width;
+  const _angle = (magnetometer) => {
+    let angle = 0;
+    if (magnetometer) {
+      let { x, y, z } = magnetometer;
+      if (Math.atan2(y, x) >= 0) {
+        angle = Math.atan2(y, x) * (180 / Math.PI);
+      } else {
+        angle = (Math.atan2(y, x) + 2 * Math.PI) * (180 / Math.PI);
+      }
+    }
+    return Math.round(angle);
+  };
+
+  const _direction = (degree) => {
+    if (degree >= 22.5 && degree < 67.5) {
+      return 'NE';
+    }
+    else if (degree >= 67.5 && degree < 112.5) {
+      return 'E';
+    }
+    else if (degree >= 112.5 && degree < 157.5) {
+      return 'SE';
+    }
+    else if (degree >= 157.5 && degree < 202.5) {
+      return 'S';
+    }
+    else if (degree >= 202.5 && degree < 247.5) {
+      return 'SW';
+    }
+    else if (degree >= 247.5 && degree < 292.5) {
+      return 'W';
+    }
+    else if (degree >= 292.5 && degree < 337.5) {
+      return 'NW';
+    }
+    else {
+      return 'N';
+    }
+  };
+
+  const _degree = (magnetometer) => {
+    return magnetometer - 90 >= 0 ? magnetometer - 90 : magnetometer + 271;
+  };
+
+  const _getUserDirection = () => {
+    if (myPosition.latitude !== null && myPosition.longitude !== null && otherUserPosition.latitude !== null && otherUserPosition.longitude !== null) {
+      // Calculate the angle between my position and the other user's position
+      const userAngle = Math.atan2(
+        otherUserPosition.latitude - myPosition.latitude,
+        otherUserPosition.longitude - myPosition.longitude
+      ) * (180 / Math.PI);
+  
+      // Calculate the difference between userAngle and magnetometer angle
+      const userDirection = userAngle - magnetometer;
+  
+      // Adjust userDirection based on the current rotation of the phone
+      const adjustedDirection = userDirection + _degree(magnetometer);
+  
+      // Return the adjusted user direction
+      return adjustedDirection >= 0 ? adjustedDirection : 360 + adjustedDirection;
+    }
+    return 0;
+  };
 
   return (
-    <ImageBackground source={require('../assets/backgroundLobby.jpg')} style={styles.image}>
-      <View style={styles.container}>
-        <View style={styles.container_infos}>
-          <TouchableOpacity style={styles.quitButton} onPress={() => navigation.goBack()}>
-            <Text>Exit</Text>
-          </TouchableOpacity>
-          <Text style={styles.containerTitle}>Chasseur</Text>
-        </View>
-        
-        <Svg
-          height={screenWidth * 0.8}
-          width={screenWidth * 0.8}
-          viewBox={`0 0 ${screenWidth} ${screenWidth}`}
-          style={[styles.boussolecontainer, { transform: [{ rotate: `${arrowRotation}deg` }] }]}
-        >
-          {colorsArray.map((color, index) => (
-            <Path
-              key={index}
-              d={describeArc(screenWidth / 2, screenWidth / 2, (screenWidth * 0.8) / 2, -235, 360 / colorsArray.length)}
-              fill="transparent"
-              stroke={color}
-              strokeWidth="20"
-              strokeDasharray={[1000, 1000]}
-              strokeDashoffset={strokeOffsets[index]}
-            />
-          ))}
-          
-          <Circle
-            cx={screenWidth / 2 + (screenWidth * 0.8) / 2 * Math.cos((userPosition - 90) * Math.PI / 180)}
-            cy={screenWidth / 2 + (screenWidth * 0.8) / 2 * Math.sin((userPosition - 90) * Math.PI / 180)}
-            r={10} // Rayon du cercle représentant l'utilisateur
-            fill="red" // Couleur du cercle représentant l'utilisateur
+    <Grid style={{ backgroundColor: 'black' }}>
+      <Row style={{ alignItems: 'center' }} size={.9}>
+        <Col style={{ alignItems: 'center' }}>
+          <Text
+            style={{
+              color: '#fff',
+              fontSize: height / 26,
+              fontWeight: 'bold'
+            }}>
+            {_direction(_degree(magnetometer))}
+          </Text>
+        </Col>
+      </Row>
+
+      <Row style={{ alignItems: 'center' }} size={.1}>
+        <Col style={{ alignItems: 'center' }}>
+          <View style={{ position: 'absolute', width: width, alignItems: 'center', top: 0 }}>
+            <Image source={require('../../assets/compass_pointer.png')} style={{
+              height: height / 26,
+              resizeMode: 'contain'
+            }} />
+          </View>
+        </Col>
+      </Row>
+
+      <Row style={{ alignItems: 'center' }} size={2}>
+        <Col style={{ alignItems: 'center', position: 'relative' }}>
+          <Image source={require("../../assets/compass_bg.png")} style={{
+            height: width - 80,
+            justifyContent: 'center',
+            alignItems: 'center',
+            resizeMode: 'contain',
+            transform: [{ rotate: 360 - magnetometer + 'deg' }]
+          }} />
+
+          {/* Fleche indiquant la direction de l' */}
+          <View style={{
+              width: 0,
+              height: 0,
+
+              position: 'absolute',
+              // left:  `${50  * Math.PI / 180 * 50}%`,
+              // top: `${50  * Math.PI / 180 * 50}%`,
+              
+              borderLeftWidth: 10,
+              borderLeftColor: 'transparent',
+              borderRightWidth: 10,
+              borderRightColor: 'transparent',
+              borderBottomWidth: 20,
+              borderBottomColor: 'red',
+              transform: [
+                {
+                  rotate: `${_getUserDirection() * 360 - magnetometer}deg`
+                }
+              ]
+            }}
           />
-        </Svg>
-      </View>
-    </ImageBackground>
+      </Col>
+      </Row>
+
+      <Row style={{ alignItems: 'center' }} size={1}>
+        <Col style={{ alignItems: 'center' }}>
+          <Text style={{ color: '#fff' }}>The dev team</Text>
+        </Col>
+      </Row>
+    </Grid>
   );
 }
-
-const describeArc = (x, y, radius, startAngle, endAngle) => {
-  const startRadians = (startAngle - 90) * Math.PI / 180;
-  const endRadians = (endAngle - 90) * Math.PI / 180;
-
-  const largeArcFlag = endRadians - startRadians <= Math.PI ? "0" : "1";
-
-  const startX = x + radius * Math.cos(startRadians);
-  const startY = y + radius * Math.sin(startRadians);
-  const endX = x + radius * Math.cos(endRadians);
-  const endY = y + radius * Math.sin(endRadians);
-
-  const arc = [
-    "M", startX, startY,
-    "A", radius, radius, 0, largeArcFlag, 1, endX, endY
-  ].join(" ");
-
-  return arc;
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    marginTop: 50,
-  },
-  container_infos: {
-  },
-  containerTitle: {
-    position: "relative",
-    top: -40,
-    alignItems: "center",
-    marginTop: 50,
-    marginBottom: 50,
-    fontSize: 70,
-    fontWeight: "bold"
-  },
-  quitButton: {
-    borderWidth: 1,
-    backgroundColor: '#DC143C',
-    borderRadius: 5,
-    paddingLeft: 5,
-    paddingRight: 5,
-    fontSize: 20
-  },
-  image: {
-    flex: 1,
-    justifyContent: 'center',
-    resizeMode: 'cover',
-    width: '100%',
-    height: '100%'
-  },
-  boussolecontainer: {
-    width: 300, 
-    height: 300, 
-    position: "relative",
-    left: 0, 
-    right: 0
-  }
-});
