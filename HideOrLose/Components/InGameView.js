@@ -4,8 +4,9 @@ import { Magnetometer, Gyroscope, Accelerometer } from 'expo-sensors';
 import { useNavigation } from '@react-navigation/native';
 import { requestForegroundPermissionsAsync, watchPositionAsync, Accuracy } from 'expo-location';
 import Svg, { Circle, Polygon } from 'react-native-svg';
+import {firebase} from "../firebaseConfig";
 
-export default function InGameView() {
+export default function InGameView({socket}) {
 
   const navigation = useNavigation();
 
@@ -13,6 +14,7 @@ export default function InGameView() {
   const [arrowRotation, setArrowRotation] = useState(0);
   const [arrowPosition, setArrowPosition] = useState({ x: 0, y: 0 });
   const [userLocation, setUserLocation] = useState(null);
+  const [gameInfo, setGameInfo] = useState("");
   const targetLocation = { latitude: 40.7128, longitude: -74.0060 };
 
   useEffect(() => {
@@ -46,8 +48,28 @@ export default function InGameView() {
       setArrowRotation(rotation);
     });
 
+    socket.on("game-end", (won) => {
+      setGameInfo(won);
+      const today = Date.now();
+      
+      try {
+        const userId = firebase.auth().currentUser.uid;
+        const gameInfos = firebase.firestore().collection("Game");
+
+        gameInfos.set({
+          date: today,
+          asWin: gameInfo,
+          userId: userId
+        });
+        console.log("Donnée de partie sauvegardée avec succès!");
+      } catch (error) {
+        console.error("Erreur lors de la sauvegarde de la partie : ", error);
+      }
+    });
+
     return () => {
       Gyroscope.removeAllListeners();
+      socket.off("game-end");
     };
   }, []);
 

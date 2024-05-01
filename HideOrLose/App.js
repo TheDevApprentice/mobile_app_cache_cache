@@ -12,6 +12,7 @@ import {firebase} from "./firebaseConfig";
 import { io } from "socket.io-client";
 import { Stop } from 'react-native-svg';
 import Constants from 'expo-constants';
+import GameHistory from './Components/GameHistory';
 
 function App() {
   const Stack = createStackNavigator();
@@ -56,6 +57,10 @@ function App() {
 
       <Stack.Screen name='InGameView' options={{headerShown:false}}>
       {()=> <InGameView socket={socket}/>}
+      </Stack.Screen>
+
+      <Stack.Screen default name='GameHistory' options={{headerShown:false}}>
+      {()=> <GameHistory socket={socket}/>}
       </Stack.Screen>
 
     </Stack.Navigator>
