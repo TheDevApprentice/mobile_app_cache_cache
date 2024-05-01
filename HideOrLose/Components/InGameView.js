@@ -37,7 +37,6 @@ export default function InGameView() {
         console.log('Permission denied for location access');
       }
     };
-
     requestLocationPermission();
 
     Magnetometer.addListener(data => {
@@ -48,8 +47,10 @@ export default function InGameView() {
 
     return () => {
       Gyroscope.removeAllListeners();
+      
     };
   }, []);
+  
 
   const updateArrowPosition = (data) => {
     if (!userLocation) return;
@@ -63,6 +64,16 @@ export default function InGameView() {
     setArrowPosition({ x, y });
   };
 
+  const timeFormat = (time) =>{
+
+    const seconds = time % 60;
+    const minutes = (time - seconds)/60;
+
+    const minuteStr = minutes < 10 ? "0"+ minutes:minutes;
+    const secondStr = seconds < 10 ? "0"+seconds:seconds;
+    return minuteStr + ":" + secondStr;
+  }
+
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
 
@@ -73,6 +84,7 @@ export default function InGameView() {
           <TouchableOpacity style={styles.quitButton} onPress={() => navigation.goBack()}>
             <Text>Exit</Text>
           </TouchableOpacity>
+          <Text>{timeFormat(timer)}</Text>
           <Text style={styles.containerTitle}>Chasseur</Text>
         </View>
         
