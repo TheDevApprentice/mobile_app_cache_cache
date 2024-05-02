@@ -14,7 +14,8 @@ export default function InGameView({socket}) {
   const [arrowRotation, setArrowRotation] = useState(0);
   const [arrowPosition, setArrowPosition] = useState({ x: 0, y: 0 });
   const [userLocation, setUserLocation] = useState(null);
-  const [gameInfo, setGameInfo] = useState("");
+  const [gameInfo, setGameInfo] = useState();
+  const [timer,setTimer]= useState(0);
   const targetLocation = { latitude: 40.7128, longitude: -74.0060 };
 
   useEffect(() => {
@@ -39,7 +40,6 @@ export default function InGameView({socket}) {
         console.log('Permission denied for location access');
       }
     };
-
     requestLocationPermission();
 
     Magnetometer.addListener(data => {
@@ -48,6 +48,10 @@ export default function InGameView({socket}) {
       setArrowRotation(rotation);
     });
 
+    socket.on("update-game", (room)=>{
+        setTimer(room.time);
+
+    });
     socket.on("game-end", (won) => {
       setGameInfo(won);
       const today = new Date().toISOString().slice(0,10);
@@ -65,9 +69,12 @@ export default function InGameView({socket}) {
 
     return () => {
       Gyroscope.removeAllListeners();
+
       socket.off("game-end");
-    };
+      socket.off("update-game");
+   };
   }, []);
+  
 
   const updateArrowPosition = (data) => {
     if (!userLocation) return;
@@ -81,6 +88,16 @@ export default function InGameView({socket}) {
     setArrowPosition({ x, y });
   };
 
+  const timeFormat = (time) =>{
+
+    const seconds = time % 60;
+    const minutes = (time - seconds)/60;
+
+    const minuteStr = minutes < 10 ? "0"+ minutes:minutes;
+    const secondStr = seconds < 10 ? "0"+seconds:seconds;
+    return minuteStr + ":" + secondStr;
+  }
+
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
 
@@ -91,7 +108,11 @@ export default function InGameView({socket}) {
           <TouchableOpacity style={styles.quitButton} onPress={() => navigation.goBack()}>
             <Text>Exit</Text>
           </TouchableOpacity>
+          <Text style={styles.timer}>{timeFormat(timer)}</Text>
           <Text style={styles.containerTitle}>Chasseur</Text>
+          {gameInfo ??(
+          <Text style={styles.endGameBanner}>{gameInfo ? 'Victoire':'Défaite'}</Text>
+        )}
         </View>
         
         <Animated.View style={[styles.arrowContainer, { transform: [{ rotate: `${arrowRotation}deg` }] }]}>
@@ -135,7 +156,7 @@ const styles = StyleSheet.create({
     top: -40,
     alignItems: "center",
     marginTop: 50,
-    marginBottom: 50,
+
     fontSize: 70,
     fontWeight: "bold"
   },
@@ -162,5 +183,17 @@ const styles = StyleSheet.create({
     right: 0
   },
   arrow: {
+  },
+  timer: {
+    paddingLeft:85,
+    fontSize:50
+  },
+  endGameBanner: {
+    fontSize:50,
+    fontWeight:'bold',
+    alignSelf:'center',
+    verticalAlign:'center',
+    color:'red'
+
   }
 });
