@@ -14,7 +14,7 @@ export default function InGameView({socket}) {
   const [arrowRotation, setArrowRotation] = useState(0);
   const [arrowPosition, setArrowPosition] = useState({ x: 0, y: 0 });
   const [userLocation, setUserLocation] = useState(null);
-  const [gameInfo, setGameInfo] = useState("");
+  const [gameInfo, setGameInfo] = useState();
   const [timer,setTimer]= useState(0);
   const targetLocation = { latitude: 40.7128, longitude: -74.0060 };
 
@@ -103,6 +103,9 @@ export default function InGameView({socket}) {
   return (
     <ImageBackground source={require('../assets/backgroundLobby.jpg')} style={styles.image}>
       <View style={styles.container}>
+        {gameInfo !== undefined ?(
+          <Text>{gameInfo}</Text>
+        ):(<Text></Text>)}
         <View style={styles.container_infos}>
           <TouchableOpacity style={styles.quitButton} onPress={() => navigation.goBack()}>
             <Text>Exit</Text>
@@ -181,6 +184,7 @@ const styles = StyleSheet.create({
   arrow: {
   },
   timer: {
-    justifyContent: "center"
+    paddingLeft:85,
+    fontSize:50
   }
 });

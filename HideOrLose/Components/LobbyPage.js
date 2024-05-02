@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 
 export default function LobbyPage({socket}){
     const navigation = useNavigation();
-    const [room, setRoom] = useState({name:'',users:[{name:''}]});
+    const [room, setRoom] = useState({name:'',users:[{name:'',ready:false}]});
     
     useEffect(()=>{
         socket.on('update-lobby',(room)=>{setRoom(room)});
@@ -36,7 +36,8 @@ export default function LobbyPage({socket}){
             <Text style={styles.roomTitle}>{room.name}</Text>
         
             <View style={styles.PlayerList}>
-                {room.users.map((user, key)=>(
+                {
+                room.users.map((user, key)=>(
                 <Text key={key} style={[styles.Player, { backgroundColor: user.ready ? 'green' :'transparent' }]}>
                     {user.name} 
                 </Text>))}
