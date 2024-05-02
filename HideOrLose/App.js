@@ -29,6 +29,7 @@ function App() {
   useEffect(() => {
     const hostUri = Constants.expoConfig.hostUri;
     const ipAddress = "10.4.1.196"/*hostUri.split(":")[0].trim()*/;
+
     const socketUrl = `http://${ipAddress}:3000`;
     setSocket(io(socketUrl));
     
