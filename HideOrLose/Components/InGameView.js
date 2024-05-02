@@ -55,10 +55,11 @@ export default function InGameView({socket}) {
     socket.on("game-end", (won) => {
       setGameInfo(won);
       const today = new Date().toISOString().slice(0,10);
+      const userId = firebase.auth().currentUser.uid;
       
       try {
         const userId = firebase.auth().currentUser.uid;
-        firebase.firestore().collection("Game").doc(firebase.auth().currentUser.uid).set({today, won, userId});
+        firebase.firestore().collection("Games").doc(userId).collection("Game").add({today, won});
 
         console.log("Donnée de partie sauvegardée avec succès!");
       } catch (error) {
