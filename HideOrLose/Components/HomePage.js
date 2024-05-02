@@ -41,6 +41,15 @@ export default function HomePage({socket}) {
     <TouchableOpacity
       style = {styles.button}
       onPress={()=> {
+        navigation.navigate("GameHistory");
+      }}
+    >
+      <Text style={styles.buttonText}>Historique</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style = {styles.button}
+      onPress={()=> {
         firebase.auth().signOut();
         socket.emit("leave-app");
         navigation.navigate("LoginPage");
