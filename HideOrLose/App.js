@@ -43,7 +43,7 @@ function App() {
   if (initializing) return null;
 
   return (
-    <Stack.Navigator initialRouteName='LoginPage'>
+    <Stack.Navigator initialRouteName='InGameView'>
       <Stack.Screen name='LoginPage' component={LoginPage} options={{headerShown:false}}/>
       <Stack.Screen name='RegisterPage' component={RegisterPage} options={{headerShown:false}}/>
       <Stack.Screen name='ForgotPassword' component={ForgotPassword} options={{headerShown:false}}/>

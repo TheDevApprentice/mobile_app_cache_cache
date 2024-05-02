@@ -103,15 +103,15 @@ export default function InGameView({socket}) {
   return (
     <ImageBackground source={require('../assets/backgroundLobby.jpg')} style={styles.image}>
       <View style={styles.container}>
-        {gameInfo ??(
-          <Text style={styles.endGameBanner}>{gameInfo ? 'Victoire':'Défaite'}</Text>
-        )}
         <View style={styles.container_infos}>
           <TouchableOpacity style={styles.quitButton} onPress={() => navigation.goBack()}>
             <Text>Exit</Text>
           </TouchableOpacity>
           <Text style={styles.timer}>{timeFormat(timer)}</Text>
           <Text style={styles.containerTitle}>Chasseur</Text>
+          {gameInfo ??(
+          <Text style={styles.endGameBanner}>{gameInfo ? 'Victoire':'Défaite'}</Text>
+        )}
         </View>
         
         <Animated.View style={[styles.arrowContainer, { transform: [{ rotate: `${arrowRotation}deg` }] }]}>
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     top: -40,
     alignItems: "center",
     marginTop: 50,
-    marginBottom: 50,
+
     fontSize: 70,
     fontWeight: "bold"
   },
@@ -188,12 +188,11 @@ const styles = StyleSheet.create({
     fontSize:50
   },
   endGameBanner: {
-    position: 'absolute',
-    width: 500,
-    height:250,
     fontSize:50,
-    backgroundColor: 'white',
+    fontWeight:'bold',
     alignSelf:'center',
-    verticalAlign:'center'
+    verticalAlign:'center',
+    color:'red'
+
   }
 });
