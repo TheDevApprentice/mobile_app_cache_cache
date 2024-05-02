@@ -103,9 +103,9 @@ export default function InGameView({socket}) {
   return (
     <ImageBackground source={require('../assets/backgroundLobby.jpg')} style={styles.image}>
       <View style={styles.container}>
-        {gameInfo !== undefined ?(
-          <Text>{gameInfo}</Text>
-        ):(<Text></Text>)}
+        {gameInfo ??(
+          <Text style={styles.endGameBanner}>{gameInfo ? 'Victoire':'Défaite'}</Text>
+        )}
         <View style={styles.container_infos}>
           <TouchableOpacity style={styles.quitButton} onPress={() => navigation.goBack()}>
             <Text>Exit</Text>
@@ -186,5 +186,14 @@ const styles = StyleSheet.create({
   timer: {
     paddingLeft:85,
     fontSize:50
+  },
+  endGameBanner: {
+    position: 'absolute',
+    width: 500,
+    height:250,
+    fontSize:50,
+    backgroundColor: 'white',
+    alignSelf:'center',
+    verticalAlign:'center'
   }
 });
