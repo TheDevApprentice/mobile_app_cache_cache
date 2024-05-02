@@ -1,21 +1,29 @@
 import { StyleSheet, Text, View, TouchableOpacity, FlatList } from 'react-native';
-import React from "react";
+import React, {useState} from "react";
 import { useNavigation } from '@react-navigation/native';
 import {firebase} from "../firebaseConfig";
 
 
 export default function GameHistory() {
     const navigation = useNavigation();
+
+    const [gameInfos, setGameInfos] = useState([]);
+
     try {
         const userId = firebase.auth().currentUser.uid;
         const games = firebase.firestore().collection("Game");
 
-        const gameInfo = games.get().where("userId", "==", userId);
-        const gameInfos = [];
-
-        gameInfo.forEach((doc) => {
-            gameInfos.push({id: doc.id, date: doc.date, asWin: doc.asWin})
+        games.where("userId", "==", userId).get()
+        .then((data) => {
+            return data.docs.map(doc => doc.data());
+        })
+        .then((info) => {
+            setGameInfos(info.JSON);
+        })
+        .catch((error) => {
+            console.log("Error :" + error);
         });
+        
     } catch (error) {
         console.error('Erreur lors de la récupération des données des utilisateurs : ', error);
         return [];
@@ -23,17 +31,17 @@ export default function GameHistory() {
 
     return (
         <View style = {styles.container}>
-            <Text style ={styles.titleText}>Historique des parties</Text>
+            <Text style ={styles.titleText}>Historique de mes parties</Text>
             <View style={styles.row}>
                 <Text style={[styles.cell, styles.headerCell]}>Date</Text>
-                <Text style={[styles.cell, styles.headerCell]}>À gagné</Text>
+                <Text style={[styles.cell, styles.headerCell]}>A gagné</Text>
             </View>
             <FlatList
                 data={gameInfos}
                 renderItem={({item}) => (
                     <View style={styles.row}>
-                        <Text style={styles.cell}>{item.date}</Text>
-                        <Text style={styles.cell}>{item.asWin}</Text>
+                        <Text style={styles.cell}>{item.today}</Text>
+                        <Text style={styles.cell}>{item.won ? "Oui" : "Non"}</Text>
                     </View>
                 )}
                 keyExtractor={(item, index) => index.toString()}
