@@ -112,7 +112,7 @@ export default function InGameView({socket}) {
           <TouchableOpacity style={styles.quitButton} onPress={() => navigation.goBack()}>
             <Text>Exit</Text>
           </TouchableOpacity>
-          <Text>{timeFormat(timer)}</Text>
+          <Text style={styles.timer}>{timeFormat(timer)}</Text>
           <Text style={styles.containerTitle}>Chasseur</Text>
         </View>
         
@@ -184,5 +184,8 @@ const styles = StyleSheet.create({
     right: 0
   },
   arrow: {
+  },
+  timer: {
+    justifyContent: "center"
   }
 });
