@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 
 export default function LobbyPage({socket}){
     const navigation = useNavigation();
-    const [room, setRoom] = useState({name:'',users:[{name:''}]});
+    const [room, setRoom] = useState({name:'',users:[{name:'',ready:false}]});
     
     useEffect(()=>{
         socket.on('update-lobby',(room)=>{setRoom(room)});
