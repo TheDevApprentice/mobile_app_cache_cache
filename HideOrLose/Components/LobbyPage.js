@@ -36,7 +36,8 @@ export default function LobbyPage({socket}){
             <Text style={styles.roomTitle}>{room.name}</Text>
         
             <View style={styles.PlayerList}>
-                {room.users.map((user, key)=>(
+                {
+                room.users.map((user, key)=>(
                 <Text key={key} style={[styles.Player, { backgroundColor: user.ready ? 'green' :'transparent' }]}>
                     {user.name} 
                 </Text>))}
