@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, Image, View, Dimensions } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, Text, Image, View, Dimensions, TouchableOpacity } from 'react-native';
 import { Magnetometer } from 'expo-sensors';
 import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
 import { Grid, Col, Row } from 'react-native-easy-grid';
 
-export default function InGameView() {
+export default function InGameView({socket}) {
   const navigation = useNavigation();
   const height = Dimensions.get('window').height;
   const width = Dimensions.get('window').width;
@@ -15,14 +15,24 @@ export default function InGameView() {
 
   const [locationPermission, setLocationPermission] = useState(false);
 
-  const [myPosition, setMyPosition] = useState({ latitude: null, longitude: null });
-  const [otherUserPosition, setOtherUserPosition] = useState({ latitude: 43.598079, longitude: -51.660771 }); // Position d'un autre utilisateur
-  
+  const [myPosition, setMyPosition] = useState({ lattitude: null, longitude: null });
+  const [room, setRoom] = useState({
+    name: "", 
+    gameIsActive: false, 
+    users: [], 
+    time: 999999999, 
+    nbEliminated: 0
+  }); // Information de la game en cours
+
+
   useEffect(() => {
     _requestLocationPermission();
     _subscribe();
+      socket.on('update-game',(room)=>{setRoom(room)});
+      console.log(room)
     return () => {
       _unsubscribe();
+      socket.off('update-game');
     };
   }, []);
 
@@ -51,7 +61,7 @@ export default function InGameView() {
     try {
       let { coords } = await Location.getCurrentPositionAsync({});
       console.log("Current Position:", coords);
-      setMyPosition({ latitude: coords.latitude, longitude: coords.longitude });
+      setMyPosition({ lattitude: coords.latitude, longitude: coords.longitude });
     } catch (error) {
       console.error("Error getting current location:", error);
     }
@@ -100,13 +110,13 @@ export default function InGameView() {
   const _degree = (magnetometer) => {
     return magnetometer - 90 >= 0 ? magnetometer - 90 : magnetometer + 271;
   };
-
-  const _getUserDirection = () => {
-    if (myPosition.latitude !== null && myPosition.longitude !== null && otherUserPosition.latitude !== null && otherUserPosition.longitude !== null) {
+ 
+  const _getUserDirection = (coordinate) => {
+    if (myPosition.lattitude !== null && myPosition.longitude !== null && coordinate.lattitude !== null && coordinate.longitude !== null) {
       // Calculate the angle between my position and the other user's position
       const userAngle = Math.atan2(
-        otherUserPosition.latitude - myPosition.latitude,
-        otherUserPosition.longitude - myPosition.longitude
+        coordinate.lattitude - myPosition.lattitude,
+        coordinate.longitude - myPosition.longitude
       ) * (180 / Math.PI);
   
       // Calculate the difference between userAngle and magnetometer angle
@@ -131,7 +141,7 @@ export default function InGameView() {
               fontSize: height / 26,
               fontWeight: 'bold'
             }}>
-            {_direction(_degree(magnetometer))}
+              Chasseur
           </Text>
         </Col>
       </Row>
@@ -148,43 +158,70 @@ export default function InGameView() {
       </Row>
 
       <Row style={{ alignItems: 'center' }} size={2}>
-        <Col style={{ alignItems: 'center', position: 'relative' }}>
+        <Col style={{ 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          position: 'relative', 
+          transform: [
+              {
+                rotate: `${360 - magnetometer}deg`
+              }
+            ]
+         }}>
           <Image source={require("../../assets/compass_bg.png")} style={{
             height: width - 80,
             justifyContent: 'center',
             alignItems: 'center',
             resizeMode: 'contain',
-            transform: [{ rotate: 360 - magnetometer + 'deg' }]
+            // transform: [{ rotate: 360 - magnetometer + 'deg' }]
           }} />
 
-          {/* Fleche indiquant la direction de l' */}
-          <View style={{
-              width: 0,
-              height: 0,
-
-              position: 'absolute',
-              // left:  `${50  * Math.PI / 180 * 50}%`,
-              // top: `${50  * Math.PI / 180 * 50}%`,
-              
-              borderLeftWidth: 10,
-              borderLeftColor: 'transparent',
-              borderRightWidth: 10,
-              borderRightColor: 'transparent',
-              borderBottomWidth: 20,
-              borderBottomColor: 'red',
-              transform: [
-                {
-                  rotate: `${_getUserDirection() * 360 - magnetometer}deg`
-                }
-              ]
-            }}
-          />
+          {/* Point indiquant la direction de l'user en game */}
+          {room.users.map((user) => {
+            {console.log(user)}
+                      <View 
+                      style={{
+                        position: 'absolute',
+                          transform: [
+                            {
+                              rotate: `${_getUserDirection(user.coordinate) }deg`
+                            }
+                          ]
+                        }}
+                      >
+                        <View style={{
+                          width: 15,
+                          height: 15,
+                          marginTop: -136,
+                          borderRadius: 7.5,
+                          backgroundColor: 'red',
+                        }}
+                      />
+                     </View>
+          })}
       </Col>
       </Row>
 
       <Row style={{ alignItems: 'center' }} size={1}>
         <Col style={{ alignItems: 'center' }}>
-          <Text style={{ color: '#fff' }}>The dev team</Text>
+          <Text style={{ color: '#fff' }}>Nombre d'éliminés : {room.nbEliminated} / {room.users.length}</Text>
+          <TouchableOpacity 
+                  style={{    
+                    borderWidth: 1,
+                    backgroundColor: '#DC143C',
+                    borderRadius: 5,
+                    paddingLeft: 5,
+                    paddingRight: 5,
+                    height: 40,
+                    marginTop: 10, 
+                    fontSize: 70, 
+                    justifyContent: "center", 
+                    alignContent: "center"
+                  }}
+              >
+                  <Text style={{color:"white"}}>Jt'ai trouvé !</Text>
+          </TouchableOpacity>
+          
         </Col>
       </Row>
     </Grid>

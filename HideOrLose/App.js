@@ -28,7 +28,7 @@ function App() {
   useEffect(() => {
     const hostUri = Constants.expoConfig.hostUri;
     const ipAddress = hostUri.split(":")[0].trim();
-    const socketUrl = `http://${ipAddress}:3000`;
+    const socketUrl = `http://10.4.1.181:3000`;
     setSocket(io(socketUrl));
     
     const subscriber = firebase.auth().onAuthStateChanged(onAuthStateChanged);
