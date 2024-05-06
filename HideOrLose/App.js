@@ -12,6 +12,7 @@ import {firebase} from "./firebaseConfig";
 import { io } from "socket.io-client";
 import { Stop } from 'react-native-svg';
 import Constants from 'expo-constants';
+import GameHistory from './Components/GameHistory';
 
 function App() {
   const Stack = createStackNavigator();
@@ -27,7 +28,8 @@ function App() {
 
   useEffect(() => {
     const hostUri = Constants.expoConfig.hostUri;
-    const ipAddress = hostUri.split(":")[0].trim();
+    const ipAddress = "10.4.1.196"/*hostUri.split(":")[0].trim()*/;
+
     const socketUrl = `http://${ipAddress}:3000`;
     setSocket(io(socketUrl));
     
@@ -41,7 +43,7 @@ function App() {
   if (initializing) return null;
 
   return (
-    <Stack.Navigator>
+    <Stack.Navigator initialRouteName='InGameView'>
       <Stack.Screen name='LoginPage' component={LoginPage} options={{headerShown:false}}/>
       <Stack.Screen name='RegisterPage' component={RegisterPage} options={{headerShown:false}}/>
       <Stack.Screen name='ForgotPassword' component={ForgotPassword} options={{headerShown:false}}/>
@@ -56,6 +58,10 @@ function App() {
 
       <Stack.Screen name='InGameView' options={{headerShown:false}}>
       {()=> <InGameView socket={socket}/>}
+      </Stack.Screen>
+
+      <Stack.Screen default name='GameHistory' options={{headerShown:false}}>
+      {()=> <GameHistory socket={socket}/>}
       </Stack.Screen>
 
     </Stack.Navigator>
