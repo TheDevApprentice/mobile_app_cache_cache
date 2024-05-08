@@ -9,6 +9,7 @@ export default function InGameView({socket}) {
   const navigation = useNavigation();
   const height = Dimensions.get('window').height;
   const width = Dimensions.get('window').width;
+  const decallagePoints = ((width - 80) / 2) - 6;
 
   const [subscription, setSubscription] = useState(null);
   const [magnetometer, setMagnetometer] = useState(0);
@@ -187,8 +188,9 @@ export default function InGameView({socket}) {
             }} />
 
             {/* Point indiquant la direction de l'user en game */}
-            {room.users.map((user) => {
-                        <View 
+            {room.users.map((user, key) => (
+                        <View
+                        key={key}
                         style={{
                           position: 'absolute',
                             transform: [
@@ -201,13 +203,13 @@ export default function InGameView({socket}) {
                           <View style={{
                             width: 15,
                             height: 15,
-                            marginTop: -136,
+                            marginTop: -decallagePoints,
                             borderRadius: 7.5,
                             backgroundColor: 'red',
                           }}
                         />
                       </View>
-            })}
+            ))}
         </Col>
         </Row>
 
@@ -283,8 +285,9 @@ export default function InGameView({socket}) {
           }} />
 
           {/* Point indiquant la direction de l'user en game */}
-          {room.users.map((user) => {
+          {room.users.map((user, key) => (
                       <View 
+                      key={key}
                       style={{
                         position: 'absolute',
                           transform: [
@@ -297,13 +300,12 @@ export default function InGameView({socket}) {
                         <View style={{
                           width: 15,
                           height: 15,
-                          marginTop: -136,
+                          marginTop: -decallagePoints,
                           borderRadius: 7.5,
                           backgroundColor: 'red',
-                        }}
-                      />
+                        }}/>
                      </View>
-          })}
+          ))}
       </Col>
       </Row>
 
