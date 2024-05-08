@@ -53,6 +53,7 @@ io.on('connection', (socket) => {
 
     socket.on('user-game-update', (coordinates)=>{
       let user = rooms[0].users.find(u => u.ioId === socket.id);
+      console.log(user);
       user.coordinate.longitude = coordinates.longitude;
       user.coordinate.lattitude = coordinates.lattitude;
       updateUser(user);
