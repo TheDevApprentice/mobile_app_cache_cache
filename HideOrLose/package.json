@@ -11,13 +11,13 @@
   },
   "jest": {
     "preset": "jest-expo",
+    "setupFiles": ["./setupTests.js"],
     "transformIgnorePatterns": [
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)"
     ]
   },
   "dependencies": {
     "@react-native-community/masked-view": "^0.1.11",
-    "@react-native-google-signin/google-signin": "^11.0.1",
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/native-stack": "^6.9.26",
     "@react-navigation/stack": "^6.3.29",
