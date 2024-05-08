@@ -32,9 +32,11 @@ export default function InGameView({socket}) {
     socket.on('update-game',
       (room)=>{
         setRoom(room);
-        _getCurrentLocation().then((coordinates)=>{
-          socket.emit("user-game-update", coordinates);
-        }); 
+        if (locationPermission){
+          _getCurrentLocation().then((coordinates)=>{
+            socket.emit("user-game-update", coordinates);
+          });
+        }
       });
     return () => {
       _unsubscribe();
