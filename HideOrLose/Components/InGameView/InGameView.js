@@ -28,13 +28,14 @@ export default function InGameView({socket}) {
   useEffect(() => {
     _requestLocationPermission();
     _subscribe();
-      socket.on('update-game',
+    socket.on('is-hunter',()=>{setIsHunter(true)});
+    socket.on('update-game',
       (room)=>{
-        setRoom(room); 
-        socket.emit("user-game-update", {myPosition}); 
+        setRoom(room);
+        _getCurrentLocation().then((coordinates)=>{
+          socket.emit("user-game-update", coordinates);
+        }); 
       });
-      socket.on('is-hunter',()=>{setIsHunter(true)});
-      // console.log(room)
     return () => {
       _unsubscribe();
       socket.off('update-game');
@@ -52,8 +53,6 @@ export default function InGameView({socket}) {
   const _subscribe = () => {
     setSubscription(
       Magnetometer.addListener((data) => {
-        _getCurrentLocation();
-
         setMagnetometer(_angle(data));
       })
     );
@@ -67,8 +66,9 @@ export default function InGameView({socket}) {
   const _getCurrentLocation = async () => {
     try {
       let { coords } = await Location.getCurrentPositionAsync({});
-      // console.log("Current Position:", coords);
+      console.log("Current Position:", coords);
       setMyPosition({ lattitude: coords.latitude, longitude: coords.longitude });
+      return { lattitude: coords.latitude, longitude: coords.longitude };
     } catch (error) {
       console.error("Error getting current location:", error);
     }
@@ -186,7 +186,6 @@ export default function InGameView({socket}) {
 
             {/* Point indiquant la direction de l'user en game */}
             {room.users.map((user) => {
-              // {console.log(user)}
                         <View 
                         style={{
                           position: 'absolute',
@@ -283,7 +282,6 @@ export default function InGameView({socket}) {
 
           {/* Point indiquant la direction de l'user en game */}
           {room.users.map((user) => {
-            {console.log(user)}
                       <View 
                       style={{
                         position: 'absolute',

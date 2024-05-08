@@ -22,6 +22,7 @@ const __dirname = path.dirname(__filename);
 let users = [];
 let rooms = [];
 const radius = 10;
+let hunterChosen = false;
 
 io.on('connection', (socket) => {
     console.log('a user connected');
@@ -37,7 +38,7 @@ io.on('connection', (socket) => {
 
     socket.on('join-room', (room) => {
       if (isNewRoom(room)){
-        rooms.push(new Room(room, [], 10));
+        rooms.push(new Room(room, [], 60));
       }
       addUserToRoom(room, getUserById(socket.id));
       io.to(socket.id).emit('room-joined', room);
@@ -53,7 +54,6 @@ io.on('connection', (socket) => {
 
     socket.on('user-game-update', (coordinates)=>{
       let user = rooms[0].users.find(u => u.ioId === socket.id);
-      console.log(user);
       user.coordinate.longitude = coordinates.longitude;
       user.coordinate.lattitude = coordinates.lattitude;
       updateUser(user);
@@ -171,10 +171,12 @@ const updateUser = (user) => {
     users = users.map((u)=> ( u.ioId === user.ioId ? {...u, ...user}: u));
     let room = rooms[0];
 
-    if (room && !room.gameIsActive && allPlayersAreReady(room.users)){
-      room.gameIsActive = true;
-      io.in(room.name).emit('game-start');
-      chooseHunter(room.users);
+    if (!hunterChosen){
+      if (room && !room.gameIsActive && allPlayersAreReady(room.users)){
+        room.gameIsActive = true;
+        io.in(room.name).emit('game-start');
+        chooseHunter(room.users);
+      }
     }
   }
   catch{console.log("Error Happened");}
@@ -219,6 +221,7 @@ const chooseHunter = (users) =>{
       if(i == hunterIndex){
         users[i].isHunter = true;
         console.log(hunterIndex);
+        hunterChosen = true;
         setTimeout(()=>{
           io.to(users[i].ioId).emit('is-hunter');
         },100);
