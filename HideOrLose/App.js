@@ -7,7 +7,7 @@ import HomePage from './Components/HomePage';
 import RegisterPage from './Components/RegisterPage';
 import ForgotPassword from './Components/ForgotPassword';
 import LobbyPage from './Components/LobbyPage';
-import InGameView from './Components/InGameView';
+import InGameView from './Components/InGameView/InGameView';
 import {firebase} from "./firebaseConfig";
 import { io } from "socket.io-client";
 import { Stop } from 'react-native-svg';
