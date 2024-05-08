@@ -12,6 +12,7 @@ export default function InGameView({socket}) {
 
   const [subscription, setSubscription] = useState(null);
   const [magnetometer, setMagnetometer] = useState(0);
+  const [timer,setTimer]= useState(0);
 
   const [locationPermission, setLocationPermission] = useState(false);
 
@@ -48,6 +49,21 @@ export default function InGameView({socket}) {
       setLocationPermission(true);
     }
   };
+
+  socket.on("update-game", (room)=>{
+    setTimer(room.time);
+
+});
+
+  const timeFormat = (time) =>{
+
+    const seconds = time % 60;
+    const minutes = (time - seconds)/60;
+
+    const minuteStr = minutes < 10 ? "0"+ minutes:minutes;
+    const secondStr = seconds < 10 ? "0"+seconds:seconds;
+    return minuteStr + ":" + secondStr;
+  }
 
   const _subscribe = () => {
     setSubscription(
@@ -143,6 +159,7 @@ export default function InGameView({socket}) {
       <Grid style={{ backgroundColor: 'black' }}>
         <Row style={{ alignItems: 'center' }} size={.9}>
           <Col style={{ alignItems: 'center' }}>
+          <Text style={styles.timer}>{timeFormat(timer)}</Text>
             <Text
               style={{
                 color: '#fff',
@@ -151,6 +168,9 @@ export default function InGameView({socket}) {
               }}>
                 Chasseur
             </Text>
+            {gameInfo ??(
+          <Text style={styles.endGameBanner}>{gameInfo ? 'Victoire':'Défaite'}</Text>
+        )}
           </Col>
         </Row>
 
@@ -317,3 +337,9 @@ export default function InGameView({socket}) {
 
   );
 }
+const styles = StyleSheet.create({
+  timer: {
+    paddingLeft:85,
+    fontSize:50
+  }
+})
