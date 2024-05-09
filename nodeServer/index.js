@@ -38,7 +38,7 @@ io.on('connection', (socket) => {
 
     socket.on('join-room', (room) => {
       if (isNewRoom(room)){
-        rooms.push(new Room(room, [], 60));
+        rooms.push(new Room(room, [], 900));
       }
       addUserToRoom(room, getUserById(socket.id));
       io.to(socket.id).emit('room-joined', room);
@@ -73,7 +73,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('eliminate-user', ()=>{
-      checkIfCanEliminate();
+      checkIfCanEliminate(rooms[0], socket.id);
     })
 
     socket.on('disconnect', () => {
