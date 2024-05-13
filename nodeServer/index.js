@@ -21,7 +21,7 @@ const __dirname = path.dirname(__filename);
 
 let users = [];
 let rooms = [];
-const radius = 10;
+const radius = 8;
 let hunterChosen = false;
 
 io.on('connection', (socket) => {
@@ -251,13 +251,16 @@ const checkGameState = (room) =>{
       io.in(room.name).emit('update-game', room);
     }
     else{
+      console.log("game ended");
       const byElimination = room.nbEliminated === room.users.length - 1;
       for(let i = 0; i < users.length; i++){
         if (users[i].ioId !== hunter.ioId){
           io.to(users[i].ioId).emit('game-end', !byElimination);
+          console.log("sent");
         }
         else{
           io.to(users[i].ioId).emit('game-end', byElimination);
+          console.log("sent");
         }
       }
     }
@@ -271,7 +274,7 @@ const checkIfCanEliminate = (room, socketId) =>{
     let hunter = users.find(user => user.ioId === socketId);
 
     for(let i = 0; i < users.length; i++){
-      if (users[i].ioId !== socketId){
+      if (users[i].ioId !== socketId && !users[i].eliminated){
         if (closeEnough(users[i].coordinate, hunter.coordinate)){
           users[i].eliminated = true;
           room.nbEliminated += 1;
@@ -284,17 +287,10 @@ const checkIfCanEliminate = (room, socketId) =>{
 
 const closeEnough = (userPosition, hunterPosition) => {
   try{
-    const earthRadius = 6371e3;
-    const hunterLat = hunterPosition.lattitude * Math.PI/180;
-    const userLat = userPosition.lattitude * Math.PI/180;
-    const combinedLat = (hunterPosition.lattitude-userPosition.lattitude) * Math.PI/180;
-    const combinedLong = (hunterPosition.longitude-userPosition.longitude) * Math.PI/180;
-    const a = Math.sin(combinedLat/2) * Math.sin(combinedLat/2) +
-              Math.cos(hunterLat) * Math.cos(userLat) *
-              Math.sin(combinedLong/2) * Math.sin(combinedLong/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const d = earthRadius * c;
-    return d <= radius;
+    const distanceX = Math.abs(userPosition.lattitude - hunterPosition.lattitude) * 111111;
+    const distanceY = Math.abs(userPosition.longitude - hunterPosition.longitude) * 111111;
+
+    return distanceX <= radius && distanceY <= radius;
   }
   catch{console.log("Error Happened");}
 };
