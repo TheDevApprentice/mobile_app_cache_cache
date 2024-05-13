@@ -15,6 +15,8 @@ export default function InGameView({socket}) {
   const [magnetometer, setMagnetometer] = useState(0);
   const [timer,setTimer]= useState(0);
 
+  const [gameInfo, setGameInfo] = useState();
+
   const [locationPermission, setLocationPermission] = useState(true);
 
   const [myPosition, setMyPosition] = useState({ lattitude: null, longitude: null });
@@ -40,10 +42,23 @@ export default function InGameView({socket}) {
           });
         }
       });
+    socket.on("game-end", (won) => {
+      setGameInfo(won);
+      const today = new Date().toISOString().slice(0,10);
+      try {
+        const userId = firebase.auth().currentUser.uid;
+        firebase.firestore().collection("Game").doc(firebase.auth().currentUser.uid).set({today, won, userId});
+        console.log("Donnée de partie sauvegardée avec succès!");
+      } catch (error) {
+        console.error("Erreur lors de la sauvegarde de la partie : ", error);
+      }
+    });
+        
     return () => {
       _unsubscribe();
       socket.off('update-game');
       socket.off('is-hunter');
+      socket.off('game-end');
     };
   }, []);
 
