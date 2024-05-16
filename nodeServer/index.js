@@ -73,6 +73,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('eliminate-user', ()=>{
+      console.log("elimination attempt");
       checkIfCanEliminate(rooms[0], socket.id);
     })
 
@@ -252,7 +253,7 @@ const checkGameState = (room) =>{
     }
     else{
       console.log("game ended");
-      const byElimination = room.nbEliminated === room.users.length - 1;
+      const byElimination = room.nbEliminated >= room.users.length - 1;
       for(let i = 0; i < users.length; i++){
         if (users[i].ioId !== hunter.ioId){
           io.to(users[i].ioId).emit('game-end', !byElimination);
@@ -274,7 +275,7 @@ const checkIfCanEliminate = (room, socketId) =>{
     let hunter = users.find(user => user.ioId === socketId);
 
     for(let i = 0; i < users.length; i++){
-      if (users[i].ioId !== socketId && !users[i].eliminated){
+      if (users[i].ioId !== socketId){
         if (closeEnough(users[i].coordinate, hunter.coordinate)){
           users[i].eliminated = true;
           room.nbEliminated += 1;
@@ -287,8 +288,8 @@ const checkIfCanEliminate = (room, socketId) =>{
 
 const closeEnough = (userPosition, hunterPosition) => {
   try{
-    const distanceX = Math.abs(userPosition.lattitude - hunterPosition.lattitude) * 111111;
-    const distanceY = Math.abs(userPosition.longitude - hunterPosition.longitude) * 111111;
+    const distanceX = Math.abs(userPosition.lattitude - hunterPosition.lattitude) / 111111;
+    const distanceY = Math.abs(userPosition.longitude - hunterPosition.longitude) / 111111;
 
     return distanceX <= radius && distanceY <= radius;
   }
