@@ -208,7 +208,7 @@ export default function InGameView({socket}) {
             position: 'relative', 
             transform: [
                 {
-                  rotate: `-90deg`
+                  rotate: `${magnetometer - 360}deg`
                 }
               ]
           }}>
@@ -229,7 +229,7 @@ export default function InGameView({socket}) {
                           position: 'absolute',
                             transform: [
                               {
-                                rotate: `${_getUserDirection(user.coordinate) }deg`
+                                rotate: `${_getUserDirection(user.coordinate)}deg`
                               }
                             ]
                           }}
@@ -279,6 +279,10 @@ export default function InGameView({socket}) {
 const styles = StyleSheet.create({
   timer: {
     paddingLeft:85,
-    fontSize:50
+    fontSize:50, 
+    color: "white"
+  },
+  endGameBanner: {
+    color: "white"
   }
 })
