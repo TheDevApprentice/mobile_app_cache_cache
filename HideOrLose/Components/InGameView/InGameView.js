@@ -4,16 +4,21 @@ import { Magnetometer } from 'expo-sensors';
 import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
 import { Grid, Col, Row } from 'react-native-easy-grid';
+import {firebase} from '../../firebaseConfig';
 
 export default function InGameView({socket}) {
   const navigation = useNavigation();
   const height = Dimensions.get('window').height;
   const width = Dimensions.get('window').width;
+  const decallagePoints = ((width - 80) / 2) - 6;
 
   const [subscription, setSubscription] = useState(null);
   const [magnetometer, setMagnetometer] = useState(0);
+  const [timer,setTimer]= useState(0);
 
-  const [locationPermission, setLocationPermission] = useState(false);
+  const [gameInfo, setGameInfo] = useState();
+
+  const [locationPermission, setLocationPermission] = useState(true);
 
   const [myPosition, setMyPosition] = useState({ lattitude: null, longitude: null });
   const [room, setRoom] = useState({
@@ -28,17 +33,33 @@ export default function InGameView({socket}) {
   useEffect(() => {
     _requestLocationPermission();
     _subscribe();
-      socket.on('update-game',
+    socket.on('is-hunter',()=>{setIsHunter(true)});
+    socket.on('update-game',
       (room)=>{
-        setRoom(room); 
-        socket.emit("user-game-update", {myPosition}); 
+        setRoom(room);
+        if (locationPermission){
+          _getCurrentLocation().then((coordinates)=>{
+            socket.emit("user-game-update", coordinates);
+          });
+        }
       });
-      socket.on('is-hunter',()=>{setIsHunter(true)});
-      // console.log(room)
+    socket.on("game-end", (won) => {
+      setGameInfo(won);
+      const today = new Date().toISOString().slice(0,10);
+      try {
+        const userId = firebase.auth().currentUser.uid;
+        firebase.firestore().collection("Games").doc(firebase.auth().currentUser.uid).collection("Game").doc().set({today, won, userId});
+        console.log("Donnée de partie sauvegardée avec succès!");
+      } catch (error) {
+        console.error("Erreur lors de la sauvegarde de la partie : ", error);
+      }
+    });
+        
     return () => {
       _unsubscribe();
       socket.off('update-game');
       socket.off('is-hunter');
+      socket.off('game-end');
     };
   }, []);
 
@@ -49,11 +70,24 @@ export default function InGameView({socket}) {
     }
   };
 
+  socket.on("update-game", (room)=>{
+    setTimer(room.time);
+
+});
+
+  const timeFormat = (time) =>{
+
+    const seconds = time % 60;
+    const minutes = (time - seconds)/60;
+
+    const minuteStr = minutes < 10 ? "0"+ minutes:minutes;
+    const secondStr = seconds < 10 ? "0"+seconds:seconds;
+    return minuteStr + ":" + secondStr;
+  }
+
   const _subscribe = () => {
     setSubscription(
       Magnetometer.addListener((data) => {
-        _getCurrentLocation();
-
         setMagnetometer(_angle(data));
       })
     );
@@ -67,8 +101,9 @@ export default function InGameView({socket}) {
   const _getCurrentLocation = async () => {
     try {
       let { coords } = await Location.getCurrentPositionAsync({});
-      // console.log("Current Position:", coords);
+      console.log("Current Position:", coords);
       setMyPosition({ lattitude: coords.latitude, longitude: coords.longitude });
+      return { lattitude: coords.latitude, longitude: coords.longitude };
     } catch (error) {
       console.error("Error getting current location:", error);
     }
@@ -114,43 +149,45 @@ export default function InGameView({socket}) {
     }
   };
 
-  const _degree = (magnetometer) => {
-    return magnetometer - 90 >= 0 ? magnetometer - 90 : magnetometer + 271;
+  const _degree = (radian) => {
+    return radian * (180/Math.PI);
   };
  
   const _getUserDirection = (coordinate) => {
     if (myPosition.lattitude !== null && myPosition.longitude !== null && coordinate.lattitude !== null && coordinate.longitude !== null) {
-      // Calculate the angle between my position and the other user's position
-      const userAngle = Math.atan2(
-        coordinate.lattitude - myPosition.lattitude,
-        coordinate.longitude - myPosition.longitude
-      ) * (180 / Math.PI);
-  
-      // Calculate the difference between userAngle and magnetometer angle
-      const userDirection = userAngle - magnetometer;
-  
-      // Adjust userDirection based on the current rotation of the phone
-      const adjustedDirection = userDirection + _degree(magnetometer);
-  
-      // Return the adjusted user direction
-      return adjustedDirection >= 0 ? adjustedDirection : 360 + adjustedDirection;
+
+      const dLon = myPosition.longitude - coordinate.longitude;
+
+      y = Math.sin(dLon) * Math.cos(myPosition.lattitude);
+      x = Math.cos(coordinate.lattitude) * Math.sin(myPosition.lattitude) - Math.sin(coordinate.lattitude)
+          * Math.cos(myPosition.lattitude) * Math.cos(dLon);
+
+      let brng = Math.atan2(y, x);
+      brng = _degree(brng);
+      brng = (brng + 360) % 360;
+      brng = 360 - brng;
+
+      return brng;
     }
     return 0;
   };
 
   return (
-    isHunter ? (
-      <Grid style={{ backgroundColor: 'black' }}>
+    <Grid style={{ backgroundColor: 'black' }}>
         <Row style={{ alignItems: 'center' }} size={.9}>
           <Col style={{ alignItems: 'center' }}>
+          <Text style={styles.timer}>{timeFormat(timer)}</Text>
             <Text
               style={{
                 color: '#fff',
                 fontSize: height / 26,
                 fontWeight: 'bold'
               }}>
-                Chasseur
+                {isHunter ? 'Chasseur' : 'Chassé'}
             </Text>
+            {gameInfo &&(
+          <Text style={styles.endGameBanner}>{gameInfo ? 'Victoire':'Défaite'}</Text>
+        )}
           </Col>
         </Row>
 
@@ -172,7 +209,7 @@ export default function InGameView({socket}) {
             position: 'relative', 
             transform: [
                 {
-                  rotate: `${360 - magnetometer}deg`
+                  rotate: `${magnetometer - 360}deg`
                 }
               ]
           }}>
@@ -180,19 +217,20 @@ export default function InGameView({socket}) {
               height: width - 80,
               justifyContent: 'center',
               alignItems: 'center',
-              resizeMode: 'contain',
-              // transform: [{ rotate: 360 - magnetometer + 'deg' }]
+              resizeMode: 'contain'
             }} />
 
             {/* Point indiquant la direction de l'user en game */}
-            {room.users.map((user) => {
-              // {console.log(user)}
-                        <View 
+            {room.users.map((user, key) => {
+              if(user.ioId !== socket.id){
+                return (
+                  <View
+                        key={key}
                         style={{
                           position: 'absolute',
                             transform: [
                               {
-                                rotate: `${_getUserDirection(user.coordinate) }deg`
+                                rotate: `${_getUserDirection(user.coordinate)}deg`
                               }
                             ]
                           }}
@@ -200,20 +238,23 @@ export default function InGameView({socket}) {
                           <View style={{
                             width: 15,
                             height: 15,
-                            marginTop: -136,
+                            marginTop: -decallagePoints,
                             borderRadius: 7.5,
                             backgroundColor: 'red',
                           }}
                         />
                       </View>
-            })}
+                );
+              }
+            }
+            )}
         </Col>
         </Row>
 
         <Row style={{ alignItems: 'center' }} size={1}>
           <Col style={{ alignItems: 'center' }}>
             <Text style={{ color: '#fff' }}>Nombre d'éliminés : {room.nbEliminated} / {room.users.length}</Text>
-            <TouchableOpacity 
+            {isHunter && (<TouchableOpacity 
                     style={{    
                       borderWidth: 1,
                       backgroundColor: '#DC143C',
@@ -229,91 +270,19 @@ export default function InGameView({socket}) {
                     onPress={()=>{socket.emit('eliminate-user')}}
                 >
                     <Text style={{color:"white"}}>Jt'ai trouvé !</Text>
-            </TouchableOpacity>
+            </TouchableOpacity>)}
             
           </Col>
         </Row>
       </Grid>
-    )
-    : 
-    (
-      <Grid style={{ backgroundColor: 'black' }}>
-      <Row style={{ alignItems: 'center' }} size={.9}>
-        <Col style={{ alignItems: 'center' }}>
-          <Text
-            style={{
-              color: '#fff',
-              fontSize: height / 26,
-              fontWeight: 'bold'
-            }}>
-              Chassé
-          </Text>
-        </Col>
-      </Row>
-
-      <Row style={{ alignItems: 'center' }} size={.1}>
-        <Col style={{ alignItems: 'center' }}>
-          <View style={{ position: 'absolute', width: width, alignItems: 'center', top: 0 }}>
-            <Image source={require('../../assets/compass_pointer.png')} style={{
-              height: height / 26,
-              resizeMode: 'contain'
-            }} />
-          </View>
-        </Col>
-      </Row>
-
-      <Row style={{ alignItems: 'center' }} size={2}>
-        <Col style={{ 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          position: 'relative', 
-          transform: [
-              {
-                rotate: `${360 - magnetometer}deg`
-              }
-            ]
-         }}>
-          <Image source={require("../../assets/compass_bg.png")} style={{
-            height: width - 80,
-            justifyContent: 'center',
-            alignItems: 'center',
-            resizeMode: 'contain',
-            // transform: [{ rotate: 360 - magnetometer + 'deg' }]
-          }} />
-
-          {/* Point indiquant la direction de l'user en game */}
-          {room.users.map((user) => {
-            {console.log(user)}
-                      <View 
-                      style={{
-                        position: 'absolute',
-                          transform: [
-                            {
-                              rotate: `${_getUserDirection(user.coordinate) }deg`
-                            }
-                          ]
-                        }}
-                      >
-                        <View style={{
-                          width: 15,
-                          height: 15,
-                          marginTop: -136,
-                          borderRadius: 7.5,
-                          backgroundColor: 'red',
-                        }}
-                      />
-                     </View>
-          })}
-      </Col>
-      </Row>
-
-      <Row style={{ alignItems: 'center' }} size={1}>
-        <Col style={{ alignItems: 'center' }}>
-          <Text style={{ color: '#fff' }}>Nombre d'éliminés : {room.nbEliminated} / {room.users.length}</Text>
-        </Col>
-      </Row>
-      </Grid>
-    )
-
   );
 }
+const styles = StyleSheet.create({
+  timer: {
+    fontSize:50, 
+    color: "white"
+  },
+  endGameBanner: {
+    color: "white"
+  }
+})

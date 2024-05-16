@@ -21,7 +21,8 @@ const __dirname = path.dirname(__filename);
 
 let users = [];
 let rooms = [];
-const radius = 10;
+const radius = 8;
+let hunterChosen = false;
 
 io.on('connection', (socket) => {
     console.log('a user connected');
@@ -37,7 +38,7 @@ io.on('connection', (socket) => {
 
     socket.on('join-room', (room) => {
       if (isNewRoom(room)){
-        rooms.push(new Room(room, [], 10));
+        rooms.push(new Room(room, [], 60));
       }
       addUserToRoom(room, getUserById(socket.id));
       io.to(socket.id).emit('room-joined', room);
@@ -53,7 +54,6 @@ io.on('connection', (socket) => {
 
     socket.on('user-game-update', (coordinates)=>{
       let user = rooms[0].users.find(u => u.ioId === socket.id);
-      console.log(user);
       user.coordinate.longitude = coordinates.longitude;
       user.coordinate.lattitude = coordinates.lattitude;
       updateUser(user);
@@ -73,7 +73,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on('eliminate-user', ()=>{
-      checkIfCanEliminate();
+      console.log("elimination attempt");
+      checkIfCanEliminate(rooms[0], socket.id);
     })
 
     socket.on('disconnect', () => {
@@ -171,10 +172,12 @@ const updateUser = (user) => {
     users = users.map((u)=> ( u.ioId === user.ioId ? {...u, ...user}: u));
     let room = rooms[0];
 
-    if (room && !room.gameIsActive && allPlayersAreReady(room.users)){
-      room.gameIsActive = true;
-      io.in(room.name).emit('game-start');
-      chooseHunter(room.users);
+    if (!hunterChosen){
+      if (room && !room.gameIsActive && allPlayersAreReady(room.users)){
+        room.gameIsActive = true;
+        io.in(room.name).emit('game-start');
+        chooseHunter(room.users);
+      }
     }
   }
   catch{console.log("Error Happened");}
@@ -219,6 +222,7 @@ const chooseHunter = (users) =>{
       if(i == hunterIndex){
         users[i].isHunter = true;
         console.log(hunterIndex);
+        hunterChosen = true;
         setTimeout(()=>{
           io.to(users[i].ioId).emit('is-hunter');
         },100);
@@ -248,13 +252,16 @@ const checkGameState = (room) =>{
       io.in(room.name).emit('update-game', room);
     }
     else{
-      const byElimination = room.nbEliminated === room.users.length - 1;
+      console.log("game ended");
+      const byElimination = room.nbEliminated >= room.users.length - 1;
       for(let i = 0; i < users.length; i++){
         if (users[i].ioId !== hunter.ioId){
           io.to(users[i].ioId).emit('game-end', !byElimination);
+          console.log("sent");
         }
         else{
           io.to(users[i].ioId).emit('game-end', byElimination);
+          console.log("sent");
         }
       }
     }
@@ -281,17 +288,10 @@ const checkIfCanEliminate = (room, socketId) =>{
 
 const closeEnough = (userPosition, hunterPosition) => {
   try{
-    const earthRadius = 6371e3;
-    const hunterLat = hunterPosition.lattitude * Math.PI/180;
-    const userLat = userPosition.lattitude * Math.PI/180;
-    const combinedLat = (hunterPosition.lattitude-userPosition.lattitude) * Math.PI/180;
-    const combinedLong = (hunterPosition.longitude-userPosition.longitude) * Math.PI/180;
-    const a = Math.sin(combinedLat/2) * Math.sin(combinedLat/2) +
-              Math.cos(hunterLat) * Math.cos(userLat) *
-              Math.sin(combinedLong/2) * Math.sin(combinedLong/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const d = earthRadius * c;
-    return d <= radius;
+    const distanceX = Math.abs(userPosition.lattitude - hunterPosition.lattitude) / 111111;
+    const distanceY = Math.abs(userPosition.longitude - hunterPosition.longitude) / 111111;
+
+    return distanceX <= radius && distanceY <= radius;
   }
   catch{console.log("Error Happened");}
 };

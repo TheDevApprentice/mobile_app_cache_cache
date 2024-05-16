@@ -28,7 +28,7 @@ function App() {
 
   useEffect(() => {
     const hostUri = Constants.expoConfig.hostUri;
-    const ipAddress = "10.4.1.196"/*hostUri.split(":")[0].trim()*/;
+    const ipAddress = hostUri.split(":")[0].trim();
 
     const socketUrl = `http://${ipAddress}:3000`;
     setSocket(io(socketUrl));
@@ -43,7 +43,7 @@ function App() {
   if (initializing) return null;
 
   return (
-    <Stack.Navigator initialRouteName='InGameView'>
+    <Stack.Navigator initialRouteName='LoginPage'>
       <Stack.Screen name='LoginPage' component={LoginPage} options={{headerShown:false}}/>
       <Stack.Screen name='RegisterPage' component={RegisterPage} options={{headerShown:false}}/>
       <Stack.Screen name='ForgotPassword' component={ForgotPassword} options={{headerShown:false}}/>
