@@ -4,6 +4,7 @@ import { Magnetometer } from 'expo-sensors';
 import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
 import { Grid, Col, Row } from 'react-native-easy-grid';
+import {firebase} from '../../firebaseConfig';
 
 export default function InGameView({socket}) {
   const navigation = useNavigation();
