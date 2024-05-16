@@ -184,7 +184,7 @@ export default function InGameView({socket}) {
               }}>
                 {isHunter ? 'Chasseur' : 'Chassé'}
             </Text>
-            {gameInfo ??(
+            {gameInfo &&(
           <Text style={styles.endGameBanner}>{gameInfo ? 'Victoire':'Défaite'}</Text>
         )}
           </Col>
