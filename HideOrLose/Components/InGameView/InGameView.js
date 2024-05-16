@@ -278,7 +278,6 @@ export default function InGameView({socket}) {
 }
 const styles = StyleSheet.create({
   timer: {
-    paddingLeft:85,
     fontSize:50, 
     color: "white"
   },
